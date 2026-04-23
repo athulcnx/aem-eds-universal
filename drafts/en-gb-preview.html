@@ -1,0 +1,104 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="nav" content="/drafts/nav">
+  <meta name="footer" content="/drafts/footer">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <script nonce="aem" src="/scripts/aem.js" type="module"></script>
+  <script nonce="aem" src="/scripts/scripts.js" type="module"></script>
+  <link rel="stylesheet" href="/styles/styles.css"/>
+  <style>html, body { overflow: auto !important; }</style>
+</head>
+<body>
+  <header></header>
+  <main>
+    <div>
+      <div class="upload-form">
+        <div>
+          <div><picture><img src="/drafts/images/banner-bg.jpg" alt="Banner background"></picture></div>
+        </div>
+        <div>
+          <div>
+            <h3>1. Select Region / Language</h3>
+            <p>UK/Ireland (EN)|Austria (DE)|Belgium (FR)|Belgium (NL)|France (FR)|Germany (DE)|Italy (IT)|Netherlands (EN)|Netherlands (NL)|Other Markets (EN)|Portugal (PT)|Spain (ES)|Switzerland (DE)|Switzerland (FR)|Switzerland (IT)|Israel (IL)</p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <h3>2. Choose Product*</h3>
+          </div>
+        </div>
+        <div>
+          <div><picture><img src="/drafts/images/puros-allograft.jpeg" alt="Puros® Allograft Customized Block"></picture></div>
+          <div><p>Puros® Allograft Customized Block</p></div>
+          <div><picture><img src="/drafts/images/peek-accuraplate.jpeg" alt="PEEK AccuraPlate™"></picture></div>
+          <div><p>PEEK AccuraPlate™</p></div>
+          <div><picture><img src="/drafts/images/titanium-accuramesh.jpeg" alt="Titanium AccuraMesh™"></picture></div>
+          <div><p>Titanium AccuraMesh™</p></div>
+          <div><picture><img src="/drafts/images/peek-accuramesh.jpeg" alt="PEEK AccuraMesh™"></picture></div>
+          <div><p>PEEK AccuraMesh™</p></div>
+        </div>
+        <div>
+          <div><p><em>*Product clearance and availability may be limited to certain countries/regions.</em></p></div>
+        </div>
+        <div>
+          <div>
+            <h3>3. Please Fill in the Following Information</h3>
+          </div>
+        </div>
+        <div>
+          <div><p>Account Number *|text|account_number|required</p></div>
+          <div><p>Patient ID (e.g. Numerical Code, Initials etc.) *|text|patient_id|required</p></div>
+        </div>
+        <div>
+          <div><p>Customer Name *|text|contact|required</p></div>
+          <div><p>Defect Site *|text|region|required</p></div>
+        </div>
+        <div>
+          <div><p>E-Mail *|email|email|required</p></div>
+          <div><p>Number of planned Implants; Ø and length (mm) *|text|implant_size|required</p></div>
+        </div>
+        <div>
+          <div><p>Address *|text|street|required</p></div>
+          <div><p>Comments|textarea|comments</p></div>
+        </div>
+        <div>
+          <div><p>Phone Number *|tel|phone|required</p></div>
+        </div>
+        <div>
+          <div><p><em>* Required fields</em></p></div>
+        </div>
+        <div>
+          <div>
+            <h3>4. Upload DICOM Data</h3>
+            <p>* Please note the following information for the data transfer:</p>
+            <p><strong>Accepted file formats:</strong> <strong>.pdf, .zip, .rar</strong></p>
+            <p>file-upload|files[]|.pdf,.zip,.rar</p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <p><strong>By clicking the corresponding box below and using this site https://cuztomgraft.zimvie.com or uploading materials to this site, you:</strong></p>
+            <p>ZimVie Dental Terms and Conditions <a href="https://www.zimvie.eu/content/dam/zimvie-corporate/en/customer-service/t-n-c/TC_Sale_Dental_UK.pdf">https://www.zimvie.eu/content/dam/zimvie-corporate/en/customer-service/t-n-c/TC_Sale_Dental_UK.pdf</a></p>
+            <p>AccuraMesh™ &amp; AccuraPlate™ Products Terms and Conditions <a href="https://www.zimvie.eu/content/dam/zimvie-corporate/en/customer-service/accuramesh/Accuramesh_Terms_and_Conditions_UK_EN.pdf">https://www.zimvie.eu/content/dam/zimvie-corporate/en/customer-service/accuramesh/Accuramesh_Terms_and_Conditions_UK_EN.pdf</a></p>
+            <p>Agree to abide by the ZimVie Dental Terms and Conditions and AccuraMesh™ &amp; AccuraPlate™ Products Terms and Conditions set forth in this site. Confirm that the patient's consent to transmit patient DICOM information to the manufacturer for the exclusive purpose of designing and producing a custom-made medical device has been obtained. Furthermore, I understand that the DICOM information shall be transmitted with a pseudonymous patient ID. If it is transmitted with identifiable patient personal data, the patient has given his/her explicit informed consent. *Agree to comply with all obligations under the General Data Protection Regulation ("GDPR"), especially with respect to the protection of personal data as well as the processing thereof and the respective data subject's rights.</p>
+            <p>checkbox|statement|*I agree|required</p>
+            <p>checkbox|policy|*I Accept the <a href="https://www.zimvie.eu/en/privacy-notice.html">Privacy Policy</a>|required</p>
+            <p>submit|SUBMIT FORM</p>
+          </div>
+        </div>
+        <div>
+          <div>
+            <h3>Disclaimer</h3>
+            <p><em>*Unless otherwise indicated, as referenced herein, all trademarks and intellectual property rights are the property of ZimVie Inc. and its affiliates; and all products are manufactured by one or more of the dental subsidiaries of ZimVie US Corp LLC (Biomet 3i, LLC, etc.) and distributed by ZimVie US Corp LLC and its authorized marketing partners. Accura products are manufacturd by ResDevMed Lda Portugal. Puros products are manufactured by Tutogen Medical GmbH. For additional product information, please refer to the individual product labeling or instructions for use. Product clearance and availability may be limited to certain countries/regions. This material is intended for clinicians only and does not comprise medical advice or recommendations. Distribution to any other recipient is prohibited. This material may not be copied or reprinted without the express written consent of ZimVie and is not for distribution in France. ©2025 ZimVie. All rights reserved.</em></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer></footer>
+</body>
+</html>
