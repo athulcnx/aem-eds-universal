@@ -1,0 +1,293 @@
+/* Upload Form Block */
+.upload-form {
+  --uf-heading-color: #0b2143;
+  --uf-input-bg: #f7f9fb;
+  --uf-input-height: 45px;
+  --uf-btn-bg: #1463f7;
+  --uf-btn-color: #fff;
+  --uf-btn-radius: 100px;
+  --uf-gap: 16px;
+
+  font-family: var(--body-font-family);
+  color: var(--text-color);
+  background-image: url('/drafts/images/cover-bg.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.upload-form-wrapper {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+/* Banner row */
+.upload-form .uf-banner {
+  width: 100%;
+  height: 170px;
+  overflow: hidden;
+}
+
+.upload-form .uf-banner img {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+}
+
+/* Form container */
+.upload-form .uf-form-body {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Step headings */
+.upload-form h3 {
+  color: var(--uf-heading-color);
+  font-size: 21px;
+  font-weight: 600;
+  margin-top: 2em;
+  margin-bottom: 0.8em;
+}
+
+/* Remove default section margins inside block */
+.upload-form > div {
+  margin: 0;
+}
+
+/* Region select */
+.upload-form .uf-select {
+  width: 200px;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  background: #fff;
+  appearance: auto;
+  cursor: pointer;
+}
+
+/* Product tiles */
+.upload-form .uf-products {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 16px 0;
+}
+
+.upload-form .uf-product-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  width: 189px;
+  text-align: center;
+}
+
+.upload-form .uf-product-tile input[type="radio"] {
+  margin-bottom: 4px;
+}
+
+.upload-form .uf-product-tile .uf-product-label {
+  font-size: 13px;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.upload-form .uf-product-tile img {
+  width: 187px;
+  height: 105px;
+  object-fit: contain;
+}
+
+.upload-form .uf-footnote {
+  font-size: 13px;
+  font-style: italic;
+  color: #555;
+  margin-top: 8px;
+}
+
+/* Form fields grid */
+.upload-form .uf-fields-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+.upload-form .uf-fields-row:has(> :only-child) {
+  max-width: 50%;
+}
+
+.upload-form .uf-fields-row > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.upload-form .uf-field {
+  margin-bottom: 8px;
+}
+
+.upload-form .uf-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-color);
+}
+
+.upload-form .uf-field input,
+.upload-form .uf-field textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: none;
+  background: var(--uf-input-bg);
+  font-size: 14px;
+  font-family: var(--body-font-family);
+  height: 64px;
+}
+
+.upload-form .uf-field textarea {
+  height: 156px;
+  resize: vertical;
+}
+
+.upload-form .uf-fields-row + .uf-fields-row {
+  margin-top: 0;
+}
+
+.upload-form .uf-required-note {
+  font-size: 13px;
+  font-style: italic;
+  color: #555;
+}
+
+/* Upload section */
+.upload-form .uf-upload-section p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.upload-form .uf-file-input {
+  display: inline-block;
+  padding: 8px 16px;
+  border: 1px solid var(--uf-btn-bg);
+  color: var(--uf-btn-bg);
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  margin: 8px 0;
+}
+
+.upload-form .uf-file-input:hover {
+  background: #f0f5ff;
+}
+
+/* Terms & conditions */
+.upload-form .uf-terms {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.upload-form .uf-terms p {
+  margin: 8px 0;
+}
+
+.upload-form .uf-terms a {
+  color: var(--link-color);
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.upload-form .uf-terms strong {
+  font-weight: 700;
+}
+
+/* Checkboxes */
+.upload-form .uf-checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 24px;
+  font-size: 14px;
+}
+
+.upload-form .uf-checkbox-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.upload-form .uf-checkbox-row a {
+  color: var(--link-color);
+  text-decoration: underline;
+}
+
+/* Submit button */
+.upload-form .uf-submit-btn {
+  display: inline-block;
+  background: var(--uf-btn-bg);
+  color: var(--uf-btn-color);
+  border: none;
+  border-radius: var(--uf-btn-radius);
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 24px;
+  letter-spacing: 0.5px;
+}
+
+.upload-form .uf-submit-btn:hover {
+  background: #0f4fd6;
+}
+
+/* Disclaimer */
+.upload-form .uf-disclaimer {
+  margin-top: 32px;
+  border-top: 1px solid #ddd;
+  padding-top: 16px;
+}
+
+.upload-form .uf-disclaimer h3 {
+  font-size: 18px;
+}
+
+.upload-form .uf-disclaimer p {
+  font-size: 12px;
+  font-style: italic;
+  line-height: 1.5;
+  color: #333;
+}
+
+/* Reset EDS button styling within this block */
+main .upload-form .button-container { display: inline; }
+main .upload-form a.button:any-link {
+  background: none;
+  border: none;
+  color: var(--link-color);
+  font-size: inherit;
+  font-weight: inherit;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  text-decoration: underline;
+  white-space: normal;
+}
+
+@media (max-width: 899px) {
+  .upload-form .uf-fields-row {
+    flex-direction: column;
+  }
+
+  .upload-form .uf-products {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .upload-form .uf-product-tile {
+    flex-direction: row;
+    width: 100%;
+    gap: 12px;
+  }
+}

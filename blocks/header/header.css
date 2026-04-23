@@ -1,6 +1,6 @@
 /* header and nav layout */
 header .nav-wrapper {
-  background-color: var(--background-color);
+  background-color: #0b2143;
   width: 100%;
   z-index: 2;
   position: fixed;
@@ -15,10 +15,11 @@ header nav {
   align-items: center;
   gap: 0 24px;
   margin: auto;
-  max-width: 1248px;
+  max-width: 1349px;
   height: var(--nav-height);
   padding: 0 24px;
   font-family: var(--body-font-family);
+  color: #fff;
 }
 
 header nav[aria-expanded='true'] {
@@ -35,17 +36,16 @@ header nav[aria-expanded='true'] {
     position: relative;
   }
 
-  header nav {
-    display: flex;
-    justify-content: space-between;
-    gap: 0 32px;
-    max-width: 1264px;
-    padding: 0 32px;
-  }
-
+  header nav,
   header nav[aria-expanded='true'] {
+    display: flex;
+    justify-content: flex-start;
+    gap: 0 32px;
+    max-width: 1349px;
+    padding: 0 16px;
     min-height: 0;
     overflow: visible;
+    height: 66px;
   }
 }
 
@@ -55,7 +55,8 @@ header nav p {
 }
 
 header nav a:any-link {
-  color: currentcolor;
+  color: #fff;
+  text-decoration: none;
 }
 
 /* hamburger */
@@ -72,8 +73,8 @@ header nav .nav-hamburger button {
   border: 0;
   border-radius: 0;
   padding: 0;
-  background-color: var(--background-color);
-  color: inherit;
+  background-color: transparent;
+  color: #fff;
   overflow: initial;
   text-overflow: initial;
   white-space: initial;
@@ -142,15 +143,16 @@ header nav[aria-expanded='true'] .nav-hamburger-icon::after {
 /* brand */
 header .nav-brand {
   grid-area: brand;
-  flex-basis: 128px;
+  flex-basis: 150px;
   font-size: var(--heading-font-size-s);
   font-weight: 700;
   line-height: 1;
+  padding: 10px 0;
 }
 
 header nav .nav-brand img {
-  width: 128px;
-  height: auto;
+  width: 150px;
+  height: 46px;
 }
 
 /* sections */
@@ -187,13 +189,13 @@ header nav .nav-sections ul > li > ul > li {
 
 @media (width >= 900px) {
   header nav .nav-sections {
-    display: block;
-    visibility: visible;
-    white-space: nowrap;
+    display: none;
+    visibility: hidden;
   }
 
   header nav[aria-expanded='true'] .nav-sections {
-    align-self: unset;
+    display: none;
+    visibility: hidden;
   }
 
   header nav .nav-sections .nav-drop {

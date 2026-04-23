@@ -1,0 +1,220 @@
+/* Footer Links Block */
+/* Override section constraints inside footer */
+footer .section {
+  margin: 0;
+  padding: 0;
+}
+
+footer .section > div {
+  max-width: 100%;
+  padding: 0;
+}
+
+.footer-links-wrapper {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+.footer-links {
+  --footer-primary-bg: #0b2143;
+  --footer-primary-text: #ffffff;
+  --footer-utility-bg: #0b2143;
+  --footer-info-bg: #f7f9fb;
+  --footer-info-text: #111137;
+  --footer-divider-color: #8295b9;
+  --footer-link-size: 14px;
+  --footer-padding: 36px;
+}
+
+/* Hide text inside icon spans - show only the icon image */
+.footer-links .icon {
+  font-size: 0;
+  overflow: hidden;
+}
+
+/* Row 1: primary row with logo, nav links, social icons */
+.footer-links > div:first-child {
+  background: var(--footer-primary-bg);
+  color: var(--footer-primary-text);
+  display: flex;
+  align-items: center;
+  padding: var(--footer-padding);
+  gap: 24px;
+}
+
+/* Logo cell */
+.footer-links > div:first-child > div:first-child {
+  flex-shrink: 0;
+}
+
+.footer-links > div:first-child > div:first-child .icon {
+  display: inline-block;
+  width: 106px;
+  height: auto;
+}
+
+.footer-links > div:first-child > div:first-child .icon img {
+  width: 106px;
+  height: auto;
+}
+
+/* Nav links cell */
+.footer-links > div:first-child > div:nth-child(2) {
+  flex: 1;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.footer-links > div:first-child > div:nth-child(2) p {
+  margin: 0;
+}
+
+/* Social icons cell */
+.footer-links > div:first-child > div:nth-child(3) {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.footer-links > div:first-child > div:nth-child(3) p {
+  margin: 0;
+  line-height: 0;
+}
+
+.footer-links > div:first-child > div:nth-child(3) .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.footer-links > div:first-child > div:nth-child(3) .icon img {
+  width: 24px;
+  height: 24px;
+}
+
+/* All links in footer */
+.footer-links a {
+  color: var(--footer-primary-text);
+  text-decoration: none;
+  font-size: var(--footer-link-size);
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+  color: var(--footer-primary-text);
+}
+
+/* Reset EDS button styling for footer links */
+main .footer-links .button-container { display: inline; }
+main .footer-links a.button:any-link {
+  background: none;
+  border: none;
+  color: var(--footer-primary-text);
+  font-size: var(--footer-link-size);
+  font-weight: 400;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  text-decoration: none;
+  white-space: normal;
+  display: inline;
+}
+
+/* Also reset in footer context (fragment pipeline) */
+footer .footer-links .button-container { display: inline; }
+footer .footer-links a.button:any-link,
+footer .footer-links a:any-link {
+  background: none;
+  border: none;
+  color: var(--footer-primary-text);
+  font-size: var(--footer-link-size);
+  font-weight: 400;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  text-decoration: none;
+  white-space: normal;
+  display: inline;
+  border-radius: 0;
+}
+
+footer .footer-links a:hover {
+  text-decoration: underline;
+  color: var(--footer-primary-text);
+  background: none;
+}
+
+/* Row 2: utility links */
+.footer-links > div:nth-child(2) {
+  background: var(--footer-utility-bg);
+  color: var(--footer-primary-text);
+  padding: 0 var(--footer-padding) var(--footer-padding);
+  border-top: 1px solid var(--footer-divider-color);
+  margin-top: 0;
+}
+
+.footer-links > div:nth-child(2) > div {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-top: 16px;
+}
+
+.footer-links > div:nth-child(2) > div p {
+  margin: 0;
+}
+
+.footer-links > div:nth-child(2) > div p:not(:last-child)::after {
+  content: "·";
+  margin-left: 8px;
+  color: var(--footer-primary-text);
+}
+
+/* Row 3: copyright */
+.footer-links > div:nth-child(3) {
+  background: var(--footer-info-bg);
+  color: var(--footer-info-text);
+  padding: 16px var(--footer-padding);
+}
+
+.footer-links > div:nth-child(3) p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--footer-info-text);
+}
+
+.footer-links > div:nth-child(3) a:any-link {
+  color: var(--footer-info-text);
+}
+
+/* Mobile responsive */
+@media (max-width: 899px) {
+  .footer-links > div:first-child {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .footer-links > div:first-child > div:nth-child(2) {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .footer-links > div:first-child > div:nth-child(3) {
+    margin-left: 0;
+  }
+
+  .footer-links > div:nth-child(2) > div {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .footer-links > div:nth-child(2) > div p:not(:last-child)::after {
+    display: none;
+  }
+}
