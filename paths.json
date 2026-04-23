@@ -1,8 +1,8 @@
 {
   "mappings": [
-    "/content/aem-eds-universal/:/"
+    "/content/eds-zimvie-site/:/"
   ],
   "includes": [
-    "/content/aem-eds-universal/"
+    "/content/eds-zimvie-site/"
   ]
 }
