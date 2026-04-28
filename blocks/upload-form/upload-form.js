@@ -35,7 +35,11 @@ export default async function decorate(block) {
         if (opt.includes('UK/Ireland')) option.selected = true;
         select.appendChild(option);
       });
-      p.replaceWith(select);
+      // Wrap in styled container to mimic source custom select
+      const wrapper = document.createElement('div');
+      wrapper.className = 'uf-select-wrapper';
+      wrapper.appendChild(select);
+      p.replaceWith(wrapper);
     }
     formBody.appendChild(regionRow);
   }
@@ -70,10 +74,15 @@ export default async function decorate(block) {
       label.className = 'uf-product-label';
       label.textContent = labelCell?.textContent?.trim() || '';
 
+      // Radio + label in a row (matches source layout: radio left, text right)
+      const radioRow = document.createElement('div');
+      radioRow.className = 'uf-radio-row';
+      radioRow.appendChild(radio);
+      radioRow.appendChild(label);
+
       const img = imgCell?.querySelector('img');
 
-      tile.appendChild(radio);
-      tile.appendChild(label);
+      tile.appendChild(radioRow);
       if (img) tile.appendChild(img);
 
       productsDiv.appendChild(tile);
