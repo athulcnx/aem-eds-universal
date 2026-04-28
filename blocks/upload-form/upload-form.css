@@ -16,8 +16,9 @@
   font-size: 18px;
   color: #000;
   background-image: url('/drafts/images/cover-bg.png');
-  background-size: cover;
-  background-position: center;
+  background-size: 100% auto;
+  background-position: top center;
+  background-repeat: no-repeat;
 }
 
 .upload-form-wrapper {
@@ -27,15 +28,22 @@
 
 .upload-form > div { margin: 0; }
 
-/* ── Banner ───────────────────────────────────────────────────────── */
-.upload-form .uf-banner { width: 100%; height: 170px; overflow: hidden; }
-.upload-form .uf-banner img { width: 100%; height: 170px; object-fit: cover; }
+/* ── Banner strip ─────────────────────────────────────────────────── */
+/* Source: tutoplast.jpg banner is 170px total, nav overlaps top 66px → 104px visible */
+.upload-form .uf-banner {
+  width: 100%;
+  height: 104px;
+  background-image: url('/drafts/images/banner-bg.jpg');
+  background-size: cover;
+  background-position: center 30%;
+  background-repeat: no-repeat;
+}
 
 /* ── Form body container ──────────────────────────────────────────── */
 .upload-form .uf-form-body {
   max-width: 900px;
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 0 24px;
 }
 
 /* ── Step headings ────────────────────────────────────────────────── */
@@ -44,9 +52,23 @@
   font-size: 21.06px;
   font-weight: 600;
   color: var(--uf-navy);
-  margin-top: 2em;
+  margin-top: 100px;
   margin-bottom: 0.8em;
   line-height: 1.25;
+}
+
+/* First section heading — 76px total gap from banner bottom */
+.upload-form .uf-form-body > form > div:first-child h3 {
+  margin-top: 76px;
+}
+
+/* Upload DICOM and Disclaimer headings — also need 100px top space */
+.upload-form .uf-upload-section h3 {
+  margin-top: 100px;
+}
+
+.upload-form .uf-disclaimer h3 {
+  margin-top: 100px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -85,18 +107,51 @@
   line-height: var(--uf-input-h);
 }
 
-/* Chevron arrow */
-.upload-form .uf-select-arrow {
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  margin-right: 10px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1137' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / 20px no-repeat;
-  transition: transform 0.2s;
+/* Arrow container — matches source .ss-arrow (80px wide, full height, flex-end) */
+.upload-form .uf-select-arrow-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 80px;
+  height: 100%;
 }
 
+/* Arrow button — closed state (chevron-down), 44×44px circle */
+.upload-form .uf-select-arrow {
+  display: block;
+  width: 44px;
+  height: 44px;
+  margin-right: 8px;
+  padding: 3px;
+  border-radius: 100px;
+  box-sizing: border-box;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1137' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-position: center;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s, background-image 0.15s;
+}
+
+/* Hover on closed arrow — blue ring + light blue bg + blue chevron */
+.upload-form .uf-select-arrow:hover {
+  background-color: #f4fbff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231463f7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  box-shadow: rgb(20 99 247) 0px 0px 0px 2px;
+}
+
+/* Open state — solid blue circle with × (cross/exit) icon */
 .upload-form .uf-select-wrapper.open .uf-select-arrow {
-  transform: rotate(180deg);
+  background-color: #1463f7;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");
+  background-size: 18px;
+  box-shadow: none;
+}
+
+.upload-form .uf-select-wrapper.open .uf-select-arrow:hover {
+  background-color: #0f4fd6;
+  box-shadow: none;
 }
 
 /* Hidden native select (for form submission) */
@@ -108,7 +163,7 @@
   height: 1px;
 }
 
-/* Dropdown list */
+/* Dropdown panel — scaleY animation from top, matching source exactly */
 .upload-form .uf-select-dropdown {
   position: absolute;
   top: calc(var(--uf-input-h) + 2px);
@@ -116,17 +171,15 @@
   width: 100%;
   background: #fff;
   border-radius: var(--uf-radius);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  box-shadow: rgba(17 17 55 / 0.1) 0px 16px 24px;
   z-index: 100;
-  overflow: hidden;
-  /* Animation: scaleY + opacity, matching source */
-  transform-origin: top center;
+  box-sizing: border-box;
+  /* Animation — source uses scaleY(0)→scaleY(1), transform-origin: center top */
+  transform-origin: center top;
   transform: scaleY(0);
   opacity: 0;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: transform 0.2s, opacity 0.2s;
   pointer-events: none;
-  max-height: 320px;
-  overflow-y: auto;
 }
 
 .upload-form .uf-select-wrapper.open .uf-select-dropdown {
@@ -135,56 +188,72 @@
   pointer-events: auto;
 }
 
-/* Search input inside dropdown */
+/* Search row — 10px solid white border all sides (source: border:10px solid #fff) */
 .upload-form .uf-select-search {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  height: var(--uf-input-h);
-  padding: 5px 30px 5px 10px;
+  background: #fff;
+  border: 10px solid #fff;
+  border-radius: var(--uf-radius) var(--uf-radius) 0 0;
   box-sizing: border-box;
-  width: 100%;
 }
 
+/* Search input — 64px high, search icon on right, inset shadow */
 .upload-form .uf-select-search input {
+  display: inline-flex;
+  flex: 1 1 auto;
   width: 100%;
-  height: 100%;
-  border: 2px solid transparent;
+  height: 64px;
+  border: none;
   border-radius: var(--uf-radius);
-  background: var(--uf-input-bg);
+  background-color: var(--uf-input-bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23272e34' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+  background-position: calc(100% - 25px) center;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  box-shadow: rgb(220 220 220) 0px 1px 2px 1px inset;
   font-size: 18px;
   font-family: 'Inter', sans-serif;
-  padding: 0 10px;
+  color: var(--uf-body-text);
+  padding: 5px 30px 5px 10px;
   box-sizing: border-box;
   outline: none;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .upload-form .uf-select-search input:focus {
   box-shadow: var(--uf-focus-shadow);
 }
 
-/* Option items */
+/* Options list — scrollable inner container, max 400px like source */
+.upload-form .uf-select-list {
+  max-height: 400px;
+  overflow: hidden auto;
+  border-radius: 0 0 var(--uf-radius) var(--uf-radius);
+}
+
+/* Option items — 64px, alternating #f4fbff / #fff */
 .upload-form .uf-select-option {
   display: flex;
   align-items: center;
-  height: var(--uf-input-h);
+  height: 64px;
   padding: 6px 10px 6px 15px;
   font-size: 16px;
   font-family: 'Inter', sans-serif;
   color: #1c1137;
   cursor: pointer;
-  transition: background 0.1s;
   box-sizing: border-box;
+  user-select: none;
 }
 
-.upload-form .uf-select-option:hover,
-.upload-form .uf-select-option.highlighted {
-  background: #f4fbff;
-}
+.upload-form .uf-select-option:nth-child(odd)  { background: #f4fbff; }
+.upload-form .uf-select-option:nth-child(even) { background: #fff; }
 
-.upload-form .uf-select-option.selected {
-  background: #f4fbff;
-  font-weight: 600;
-}
+.upload-form .uf-select-option:hover { background: #e0f0ff; }
+
+.upload-form .uf-select-option.selected { font-weight: 600; }
 
 /* ═══════════════════════════════════════════════════════════════════
    2. Product tiles — custom radio buttons
@@ -230,61 +299,56 @@
   pointer-events: none;
 }
 
-/* Custom radio circle icon */
+/* Custom SVG radio icon — unchecked
+   24px box, 2px dark border, circle fills viewBox but fill=transparent so invisible */
 .upload-form .uf-product-tile .uf-radio-icon {
   display: block;
   flex-shrink: 0;
+  min-width: 24px;
+  max-width: 24px;
+  min-height: 24px;
+  max-height: 24px;
   width: 24px;
   height: 24px;
   border-radius: 100px;
   border: 2px solid #272e34;
-  background: #fff;
+  background-color: #fff;
   fill: transparent;
   stroke: #fff;
-  stroke-width: 2px;
-  margin-right: 9px;
-  transition: border-color 0.15s, background 0.15s;
+  stroke-width: 4px;  /* white stroke creates gap between circle and border */
+  margin-right: 0.56rem;
   box-sizing: border-box;
-  position: relative;
+  overflow: hidden;
+  transition: border-color 0.15s, fill 0.15s;
 }
 
-/* Inner dot (hidden by default) */
-.upload-form .uf-product-tile .uf-radio-icon::after {
-  content: '';
-  display: block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--uf-blue);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  transition: transform 0.15s;
-}
-
-/* Hover state */
+/* Hover — blue border */
 .upload-form .uf-product-tile input[type="radio"]:hover ~ .uf-radio-row .uf-radio-icon,
 .upload-form .uf-product-tile:hover .uf-radio-icon {
   border-color: var(--uf-blue);
 }
 
-/* Checked state */
+/* Checked — blue border, blue fill floods the circle, white stroke = gap ring */
 .upload-form .uf-product-tile input[type="radio"]:checked ~ .uf-radio-row .uf-radio-icon {
-  border-color: var(--uf-blue);
-  border-width: 2px;
-  padding: 3px;
+  border: 2px solid var(--uf-blue);
+  background-color: #fff;
+  fill: var(--uf-blue);
+  stroke: #fff;
+  stroke-width: 4px;
 }
 
-.upload-form .uf-product-tile input[type="radio"]:checked ~ .uf-radio-row .uf-radio-icon::after {
-  transform: translate(-50%, -50%) scale(1);
-}
-
+/* Label text — unchecked: black, checked: blue, weight 500 always */
 .upload-form .uf-product-label {
   font-family: 'Inter', sans-serif;
   font-size: 16px;
+  font-weight: 500;
   line-height: 1.3;
   color: #000;
+  transition: color 0.15s;
+}
+
+.upload-form .uf-product-tile input[type="radio"]:checked ~ .uf-radio-row .uf-product-label {
+  color: var(--uf-blue);
 }
 
 .upload-form .uf-product-tile img {
@@ -295,8 +359,8 @@
   margin-top: 5px;
 }
 
-.upload-form .uf-footnote-row { margin-top: 8px; }
-.upload-form .uf-footnote { font-size: 13px; font-style: italic; color: #555; }
+.upload-form .uf-footnote-row { margin-top: 30px; }
+.upload-form .uf-footnote { font-size: 16px; font-style: normal; color: #000; }
 
 /* ═══════════════════════════════════════════════════════════════════
    3. Form fields

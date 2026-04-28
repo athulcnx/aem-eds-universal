@@ -22,10 +22,13 @@ function buildCustomSelect(options, name) {
   display.className = 'uf-select-display';
   display.textContent = options.find((o) => o.includes('UK/Ireland')) || options[0];
 
-  // Chevron
+  // Arrow container + button (matches source .ss-arrow > .arrow-down structure)
+  const arrowWrap = document.createElement('span');
+  arrowWrap.className = 'uf-select-arrow-wrap';
   const arrow = document.createElement('span');
   arrow.className = 'uf-select-arrow';
   arrow.setAttribute('aria-hidden', 'true');
+  arrowWrap.appendChild(arrow);
 
   // Dropdown panel
   const dropdown = document.createElement('div');
@@ -42,7 +45,7 @@ function buildCustomSelect(options, name) {
   searchWrap.appendChild(searchInput);
   dropdown.appendChild(searchWrap);
 
-  // Options list
+  // Scrollable options list container (max-height: 400px, overflow: auto)
   const list = document.createElement('div');
   list.className = 'uf-select-list';
 
@@ -56,7 +59,8 @@ function buildCustomSelect(options, name) {
         if (opt.includes('UK/Ireland')) item.classList.add('selected');
         item.textContent = opt;
         item.setAttribute('role', 'option');
-        item.addEventListener('click', () => {
+        item.addEventListener('mousedown', (e) => {
+          e.preventDefault(); // prevent blur before click registers
           display.textContent = opt;
           native.value = opt;
           list.querySelectorAll('.uf-select-option').forEach((el) => el.classList.remove('selected'));
@@ -68,7 +72,7 @@ function buildCustomSelect(options, name) {
   };
 
   buildOptions();
-  dropdown.appendChild(list);
+  dropdown.appendChild(list); // list is inside dropdown, after search
 
   const open = () => {
     wrapper.classList.add('open');
@@ -80,7 +84,7 @@ function buildCustomSelect(options, name) {
 
   // Toggle on display/arrow click
   display.addEventListener('click', () => (wrapper.classList.contains('open') ? close() : open()));
-  arrow.addEventListener('click', () => (wrapper.classList.contains('open') ? close() : open()));
+  arrowWrap.addEventListener('click', () => (wrapper.classList.contains('open') ? close() : open()));
 
   // Search filter
   searchInput.addEventListener('input', () => buildOptions(searchInput.value));
@@ -92,7 +96,7 @@ function buildCustomSelect(options, name) {
 
   wrapper.appendChild(native);
   wrapper.appendChild(display);
-  wrapper.appendChild(arrow);
+  wrapper.appendChild(arrowWrap);
   wrapper.appendChild(dropdown);
   return wrapper;
 }
@@ -113,19 +117,27 @@ function buildProductTile(imgCell, labelCell, name) {
   radio.name = name;
   radio.required = true;
 
-  // Custom icon row
+  // Custom radio row — label wraps icon SVG + text (mirrors source structure)
   const radioRow = document.createElement('label');
   radioRow.className = 'uf-radio-row';
 
-  const icon = document.createElement('span');
-  icon.className = 'uf-radio-icon';
-  icon.setAttribute('aria-hidden', 'true');
+  // SVG circle icon — circle fills almost entire viewBox, stroke creates white gap
+  // Matches source: viewBox maps circle r=20.3 in 43.2 space = ~94% coverage
+  const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  iconSvg.setAttribute('viewBox', '0 0 24 24');
+  iconSvg.setAttribute('aria-hidden', 'true');
+  iconSvg.className.baseVal = 'uf-radio-icon';
+  const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  circle.setAttribute('cx', '12');
+  circle.setAttribute('cy', '12');
+  circle.setAttribute('r', '11'); // large radius — fills most of the 24px viewBox
+  iconSvg.appendChild(circle);
 
   const labelText = document.createElement('span');
   labelText.className = 'uf-product-label';
   labelText.textContent = labelCell?.textContent?.trim() || '';
 
-  radioRow.appendChild(icon);
+  radioRow.appendChild(iconSvg);
   radioRow.appendChild(labelText);
   radioField.appendChild(radio);
   radioField.appendChild(radioRow);
@@ -144,13 +156,9 @@ export default async function decorate(block) {
   const formBody = document.createElement('div');
   formBody.className = 'uf-form-body';
 
-  // ── Row 0: Banner image ──────────────────────────────────────────
+  // ── Row 0: Banner image — replaced with CSS background div ──
   const bannerRow = rows[0];
-  if (bannerRow) {
-    bannerRow.className = 'uf-banner';
-    const img = bannerRow.querySelector('img');
-    if (img) { img.style.width = '100%'; img.style.height = '170px'; img.style.objectFit = 'cover'; }
-  }
+  if (bannerRow) bannerRow.style.display = 'none';
 
   // ── Row 1: Region / Language ─────────────────────────────────────
   const regionRow = rows[1];
@@ -329,7 +337,11 @@ export default async function decorate(block) {
   form.noValidate = true;
 
   block.innerHTML = '';
-  if (bannerRow) block.appendChild(bannerRow);
+
+  // ── Banner strip (tutoplast.jpg, 104px visible height matching source) ──
+  const bannerDiv = document.createElement('div');
+  bannerDiv.className = 'uf-banner';
+  block.appendChild(bannerDiv);
 
   while (formBody.firstChild) form.appendChild(formBody.firstChild);
   formBody.appendChild(form);
