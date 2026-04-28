@@ -1,99 +1,189 @@
+/**
+ * Build a custom animated select dropdown matching the source's SlimSelect widget.
+ */
+function buildCustomSelect(options, name) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'uf-select-wrapper';
+
+  // Hidden native select for form submission
+  const native = document.createElement('select');
+  native.className = 'uf-select';
+  native.name = name;
+  options.forEach((opt) => {
+    const o = document.createElement('option');
+    o.value = opt;
+    o.textContent = opt;
+    if (opt.includes('UK/Ireland')) o.selected = true;
+    native.appendChild(o);
+  });
+
+  // Display value
+  const display = document.createElement('span');
+  display.className = 'uf-select-display';
+  display.textContent = options.find((o) => o.includes('UK/Ireland')) || options[0];
+
+  // Chevron
+  const arrow = document.createElement('span');
+  arrow.className = 'uf-select-arrow';
+  arrow.setAttribute('aria-hidden', 'true');
+
+  // Dropdown panel
+  const dropdown = document.createElement('div');
+  dropdown.className = 'uf-select-dropdown';
+  dropdown.setAttribute('role', 'listbox');
+
+  // Search
+  const searchWrap = document.createElement('div');
+  searchWrap.className = 'uf-select-search';
+  const searchInput = document.createElement('input');
+  searchInput.type = 'search';
+  searchInput.placeholder = 'Search';
+  searchInput.autocomplete = 'off';
+  searchWrap.appendChild(searchInput);
+  dropdown.appendChild(searchWrap);
+
+  // Options list
+  const list = document.createElement('div');
+  list.className = 'uf-select-list';
+
+  const buildOptions = (filter = '') => {
+    list.innerHTML = '';
+    options
+      .filter((o) => o.toLowerCase().includes(filter.toLowerCase()))
+      .forEach((opt) => {
+        const item = document.createElement('div');
+        item.className = 'uf-select-option';
+        if (opt.includes('UK/Ireland')) item.classList.add('selected');
+        item.textContent = opt;
+        item.setAttribute('role', 'option');
+        item.addEventListener('click', () => {
+          display.textContent = opt;
+          native.value = opt;
+          list.querySelectorAll('.uf-select-option').forEach((el) => el.classList.remove('selected'));
+          item.classList.add('selected');
+          close();
+        });
+        list.appendChild(item);
+      });
+  };
+
+  buildOptions();
+  dropdown.appendChild(list);
+
+  const open = () => {
+    wrapper.classList.add('open');
+    searchInput.value = '';
+    buildOptions();
+    searchInput.focus();
+  };
+  const close = () => wrapper.classList.remove('open');
+
+  // Toggle on display/arrow click
+  display.addEventListener('click', () => (wrapper.classList.contains('open') ? close() : open()));
+  arrow.addEventListener('click', () => (wrapper.classList.contains('open') ? close() : open()));
+
+  // Search filter
+  searchInput.addEventListener('input', () => buildOptions(searchInput.value));
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    if (!wrapper.contains(e.target)) close();
+  });
+
+  wrapper.appendChild(native);
+  wrapper.appendChild(display);
+  wrapper.appendChild(arrow);
+  wrapper.appendChild(dropdown);
+  return wrapper;
+}
+
+/**
+ * Build a product tile with a custom radio button (circle icon + label + image).
+ */
+function buildProductTile(imgCell, labelCell, name) {
+  const tile = document.createElement('div');
+  tile.className = 'uf-product-tile';
+
+  // Radio field container (positions input absolutely over the whole row)
+  const radioField = document.createElement('div');
+  radioField.className = 'uf-radio-field';
+
+  const radio = document.createElement('input');
+  radio.type = 'radio';
+  radio.name = name;
+  radio.required = true;
+
+  // Custom icon row
+  const radioRow = document.createElement('label');
+  radioRow.className = 'uf-radio-row';
+
+  const icon = document.createElement('span');
+  icon.className = 'uf-radio-icon';
+  icon.setAttribute('aria-hidden', 'true');
+
+  const labelText = document.createElement('span');
+  labelText.className = 'uf-product-label';
+  labelText.textContent = labelCell?.textContent?.trim() || '';
+
+  radioRow.appendChild(icon);
+  radioRow.appendChild(labelText);
+  radioField.appendChild(radio);
+  radioField.appendChild(radioRow);
+
+  tile.appendChild(radioField);
+
+  const img = imgCell?.querySelector('img');
+  if (img) tile.appendChild(img);
+
+  return tile;
+}
+
 export default async function decorate(block) {
   const rows = [...block.children];
 
-  // Create a wrapper for the entire form body
   const formBody = document.createElement('div');
   formBody.className = 'uf-form-body';
 
-  // Row 0: Banner image
+  // ── Row 0: Banner image ──────────────────────────────────────────
   const bannerRow = rows[0];
   if (bannerRow) {
     bannerRow.className = 'uf-banner';
     const img = bannerRow.querySelector('img');
-    if (img) {
-      img.style.width = '100%';
-      img.style.height = '170px';
-      img.style.objectFit = 'cover';
-    }
+    if (img) { img.style.width = '100%'; img.style.height = '170px'; img.style.objectFit = 'cover'; }
   }
 
-  // Row 1: Region / Language selector
+  // ── Row 1: Region / Language ─────────────────────────────────────
   const regionRow = rows[1];
   if (regionRow) {
     const cell = regionRow.querySelector('div');
     const h3 = cell?.querySelector('h3');
     const p = cell?.querySelector('p');
     if (h3 && p) {
-      const options = p.textContent.split('|').map((o) => o.trim());
-      const select = document.createElement('select');
-      select.className = 'uf-select';
-      select.name = 'lang_switch';
-      options.forEach((opt) => {
-        const option = document.createElement('option');
-        option.value = opt;
-        option.textContent = opt;
-        if (opt.includes('UK/Ireland')) option.selected = true;
-        select.appendChild(option);
-      });
-      // Wrap in styled container to mimic source custom select
-      const wrapper = document.createElement('div');
-      wrapper.className = 'uf-select-wrapper';
-      wrapper.appendChild(select);
-      p.replaceWith(wrapper);
+      const options = p.textContent.split('|').map((o) => o.trim()).filter(Boolean);
+      const widget = buildCustomSelect(options, 'lang_switch');
+      p.replaceWith(widget);
     }
     formBody.appendChild(regionRow);
   }
 
-  // Row 2: Product heading
-  const productHeadingRow = rows[2];
-  if (productHeadingRow) {
-    formBody.appendChild(productHeadingRow);
-  }
+  // ── Row 2: Product heading ───────────────────────────────────────
+  if (rows[2]) formBody.appendChild(rows[2]);
 
-  // Row 3: Product tiles (image and label cells)
+  // ── Row 3: Product tiles ─────────────────────────────────────────
   const productRow = rows[3];
   if (productRow) {
     const cells = [...productRow.children];
     const productsDiv = document.createElement('div');
     productsDiv.className = 'uf-products';
-
-    // Cells come in pairs: image, label
     for (let i = 0; i < cells.length; i += 2) {
-      const imgCell = cells[i];
-      const labelCell = cells[i + 1];
-
-      const tile = document.createElement('div');
-      tile.className = 'uf-product-tile';
-
-      const radio = document.createElement('input');
-      radio.type = 'radio';
-      radio.name = 'opt_article';
-      radio.required = true;
-
-      const label = document.createElement('span');
-      label.className = 'uf-product-label';
-      label.textContent = labelCell?.textContent?.trim() || '';
-
-      // Radio + label in a row (matches source layout: radio left, text right)
-      const radioRow = document.createElement('div');
-      radioRow.className = 'uf-radio-row';
-      radioRow.appendChild(radio);
-      radioRow.appendChild(label);
-
-      const img = imgCell?.querySelector('img');
-
-      tile.appendChild(radioRow);
-      if (img) tile.appendChild(img);
-
-      productsDiv.appendChild(tile);
+      productsDiv.appendChild(buildProductTile(cells[i], cells[i + 1], 'opt_article'));
     }
-
     productRow.innerHTML = '';
     productRow.appendChild(productsDiv);
     formBody.appendChild(productRow);
   }
 
-  // Row 4: Product footnote
+  // ── Row 4: Footnote ──────────────────────────────────────────────
   const footnoteRow = rows[4];
   if (footnoteRow) {
     footnoteRow.className = 'uf-footnote-row';
@@ -102,13 +192,10 @@ export default async function decorate(block) {
     formBody.appendChild(footnoteRow);
   }
 
-  // Row 5: Info heading
-  const infoHeadingRow = rows[5];
-  if (infoHeadingRow) {
-    formBody.appendChild(infoHeadingRow);
-  }
+  // ── Row 5: Info heading ──────────────────────────────────────────
+  if (rows[5]) formBody.appendChild(rows[5]);
 
-  // Rows 6–10: Form field rows
+  // ── Rows 6–10: Form field rows ───────────────────────────────────
   for (let r = 6; r <= 10; r += 1) {
     const row = rows[r];
     if (!row) continue;
@@ -119,7 +206,6 @@ export default async function decorate(block) {
     cells.forEach((cell) => {
       const text = cell.textContent.trim();
       const parts = text.split('|').map((s) => s.trim());
-
       if (parts.length >= 3) {
         const fieldDiv = document.createElement('div');
         fieldDiv.className = 'uf-field';
@@ -150,7 +236,7 @@ export default async function decorate(block) {
     formBody.appendChild(row);
   }
 
-  // Row 11: Required fields note
+  // ── Row 11: Required note ────────────────────────────────────────
   const requiredNote = rows[11];
   if (requiredNote) {
     const p = requiredNote.querySelector('p');
@@ -158,16 +244,14 @@ export default async function decorate(block) {
     formBody.appendChild(requiredNote);
   }
 
-  // Row 12: Upload DICOM Data section
+  // ── Row 12: Upload DICOM ─────────────────────────────────────────
   const uploadRow = rows[12];
   if (uploadRow) {
     uploadRow.className = 'uf-upload-row';
     const cell = uploadRow.querySelector('div');
     if (cell) {
       cell.className = 'uf-upload-section';
-      // Find and replace the file-upload placeholder
-      const paragraphs = [...cell.querySelectorAll('p')];
-      paragraphs.forEach((p) => {
+      [...cell.querySelectorAll('p')].forEach((p) => {
         if (p.textContent.startsWith('file-upload|')) {
           const parts = p.textContent.split('|');
           const fileLabel = document.createElement('label');
@@ -187,26 +271,23 @@ export default async function decorate(block) {
     formBody.appendChild(uploadRow);
   }
 
-  // Row 13: Terms, checkboxes, submit
+  // ── Row 13: Terms, checkboxes, submit ────────────────────────────
   const termsRow = rows[13];
   if (termsRow) {
     const cell = termsRow.querySelector('div');
     if (cell) {
       cell.className = 'uf-terms';
-      const paragraphs = [...cell.querySelectorAll('p')];
-      paragraphs.forEach((p) => {
+      [...cell.querySelectorAll('p')].forEach((p) => {
         const text = p.textContent.trim();
         if (text.startsWith('checkbox|')) {
           const parts = text.split('|');
-          const checkboxRow = document.createElement('label');
-          checkboxRow.className = 'uf-checkbox-row';
+          const cbLabel = document.createElement('label');
+          cbLabel.className = 'uf-checkbox-row';
           const cb = document.createElement('input');
           cb.type = 'checkbox';
           cb.name = parts[1] || '';
           if (parts[3] === 'required') cb.required = true;
-
           const span = document.createElement('span');
-          // Check for link in checkbox label
           const link = p.querySelector('a');
           if (link) {
             span.innerHTML = `${parts[2].replace(/<[^>]*>/g, '')} `;
@@ -214,10 +295,9 @@ export default async function decorate(block) {
           } else {
             span.textContent = parts[2] || '';
           }
-
-          checkboxRow.appendChild(cb);
-          checkboxRow.appendChild(span);
-          p.replaceWith(checkboxRow);
+          cbLabel.appendChild(cb);
+          cbLabel.appendChild(span);
+          p.replaceWith(cbLabel);
         } else if (text.startsWith('submit|')) {
           const parts = text.split('|');
           const btn = document.createElement('button');
@@ -233,7 +313,7 @@ export default async function decorate(block) {
     formBody.appendChild(termsRow);
   }
 
-  // Row 14: Disclaimer
+  // ── Row 14: Disclaimer ───────────────────────────────────────────
   const disclaimerRow = rows[14];
   if (disclaimerRow) {
     disclaimerRow.className = 'uf-disclaimer-row';
@@ -242,20 +322,16 @@ export default async function decorate(block) {
     formBody.appendChild(disclaimerRow);
   }
 
-  // Wrap everything in a form element
+  // Wrap in <form>
   const form = document.createElement('form');
   form.method = 'post';
   form.enctype = 'multipart/form-data';
   form.noValidate = true;
 
-  // Keep banner outside the form body wrapper
   block.innerHTML = '';
   if (bannerRow) block.appendChild(bannerRow);
 
-  // Move all form content into the form element within formBody
-  while (formBody.firstChild) {
-    form.appendChild(formBody.firstChild);
-  }
+  while (formBody.firstChild) form.appendChild(formBody.firstChild);
   formBody.appendChild(form);
   block.appendChild(formBody);
 }

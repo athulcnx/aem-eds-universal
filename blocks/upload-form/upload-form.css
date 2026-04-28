@@ -1,15 +1,16 @@
-/* Upload Form Block */
+/* ═══════════════════════════════════════════════════════════════════
+   Upload Form Block
+   ═══════════════════════════════════════════════════════════════════ */
 .upload-form {
-  --uf-heading-color: #0b2143;
+  --uf-navy: #0b2143;
+  --uf-blue: #1463f7;
   --uf-input-bg: #f7f9fb;
-  --uf-input-height: 64px;
-  --uf-input-radius: 8px;
-  --uf-input-font-size: 18px;
-  --uf-btn-bg: #1463f7;
-  --uf-btn-color: #fff;
-  --uf-btn-radius: 100px;
-  --uf-gap: 16px;
-  --uf-label-color: #58585d;
+  --uf-input-h: 64px;
+  --uf-radius: 8px;
+  --uf-shadow: rgb(220 220 220) 0px 2px 2px -1px inset;
+  --uf-focus-shadow: rgb(20 99 247) 0px 0px 0px 2px inset;
+  --uf-body-text: #272e34;
+  --uf-label-muted: #58585d;
 
   font-family: 'Inter', sans-serif;
   font-size: 18px;
@@ -24,84 +25,170 @@
   padding: 0 !important;
 }
 
-/* Banner row */
-.upload-form .uf-banner {
-  width: 100%;
-  height: 170px;
-  overflow: hidden;
-}
+.upload-form > div { margin: 0; }
 
-.upload-form .uf-banner img {
-  width: 100%;
-  height: 170px;
-  object-fit: cover;
-}
+/* ── Banner ───────────────────────────────────────────────────────── */
+.upload-form .uf-banner { width: 100%; height: 170px; overflow: hidden; }
+.upload-form .uf-banner img { width: 100%; height: 170px; object-fit: cover; }
 
-/* Form container */
+/* ── Form body container ──────────────────────────────────────────── */
 .upload-form .uf-form-body {
   max-width: 900px;
   margin: 0 auto;
   padding: 32px 24px;
 }
 
-/* Step headings */
+/* ── Step headings ────────────────────────────────────────────────── */
 .upload-form h3 {
-  color: var(--uf-heading-color);
   font-family: 'Soleil', sans-serif;
   font-size: 21.06px;
   font-weight: 600;
+  color: var(--uf-navy);
   margin-top: 2em;
   margin-bottom: 0.8em;
   line-height: 1.25;
 }
 
-/* Remove default section margins inside block */
-.upload-form > div {
-  margin: 0;
-}
-
-/* ─── Region / Language select ─────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+   1. Region / Language — custom select dropdown
+   ═══════════════════════════════════════════════════════════════════ */
 .upload-form .uf-select-wrapper {
   position: relative;
   display: inline-flex;
   align-items: center;
   width: 300px;
-  height: 64px;
+  height: var(--uf-input-h);
   background: var(--uf-input-bg);
-  border-radius: var(--uf-input-radius);
+  border-radius: var(--uf-radius);
+  box-shadow: var(--uf-shadow);
   cursor: pointer;
   box-sizing: border-box;
+  transition: box-shadow 0.15s;
+  user-select: none;
 }
 
-.upload-form .uf-select {
+.upload-form .uf-select-wrapper:hover,
+.upload-form .uf-select-wrapper.open {
+  box-shadow: var(--uf-focus-shadow);
+}
+
+/* Selected value display */
+.upload-form .uf-select-display {
   flex: 1 1 100%;
-  height: 100%;
   padding: 0 0 0 10px;
   font-size: 16px;
   font-family: 'Inter', sans-serif;
-  color: #000;
-  background: transparent;
-  border: none;
-  outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
-  line-height: 64px;
+  color: var(--uf-label-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: var(--uf-input-h);
 }
 
-/* Custom chevron arrow */
-.upload-form .uf-select-wrapper::after {
-  content: '';
-  display: block;
+/* Chevron arrow */
+.upload-form .uf-select-arrow {
   flex-shrink: 0;
   width: 44px;
   height: 44px;
   margin-right: 10px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1137' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center/20px no-repeat;
-  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1137' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / 20px no-repeat;
+  transition: transform 0.2s;
 }
 
-/* ─── Product tiles ─────────────────────────────────────────────────── */
+.upload-form .uf-select-wrapper.open .uf-select-arrow {
+  transform: rotate(180deg);
+}
+
+/* Hidden native select (for form submission) */
+.upload-form .uf-select {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+}
+
+/* Dropdown list */
+.upload-form .uf-select-dropdown {
+  position: absolute;
+  top: calc(var(--uf-input-h) + 2px);
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: var(--uf-radius);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 100;
+  overflow: hidden;
+  /* Animation: scaleY + opacity, matching source */
+  transform-origin: top center;
+  transform: scaleY(0);
+  opacity: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  pointer-events: none;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.upload-form .uf-select-wrapper.open .uf-select-dropdown {
+  transform: scaleY(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Search input inside dropdown */
+.upload-form .uf-select-search {
+  display: flex;
+  align-items: center;
+  height: var(--uf-input-h);
+  padding: 5px 30px 5px 10px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.upload-form .uf-select-search input {
+  width: 100%;
+  height: 100%;
+  border: 2px solid transparent;
+  border-radius: var(--uf-radius);
+  background: var(--uf-input-bg);
+  font-size: 18px;
+  font-family: 'Inter', sans-serif;
+  padding: 0 10px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.upload-form .uf-select-search input:focus {
+  box-shadow: var(--uf-focus-shadow);
+}
+
+/* Option items */
+.upload-form .uf-select-option {
+  display: flex;
+  align-items: center;
+  height: var(--uf-input-h);
+  padding: 6px 10px 6px 15px;
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  color: #1c1137;
+  cursor: pointer;
+  transition: background 0.1s;
+  box-sizing: border-box;
+}
+
+.upload-form .uf-select-option:hover,
+.upload-form .uf-select-option.highlighted {
+  background: #f4fbff;
+}
+
+.upload-form .uf-select-option.selected {
+  background: #f4fbff;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   2. Product tiles — custom radio buttons
+   ═══════════════════════════════════════════════════════════════════ */
 .upload-form .uf-products {
   display: flex;
   flex-wrap: nowrap;
@@ -117,22 +204,80 @@
   cursor: pointer;
 }
 
-/* Radio row: input + label side by side, 44px tall */
-.upload-form .uf-product-tile .uf-radio-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+/* Radio row: hidden real input + custom icon label */
+.upload-form .uf-product-tile .uf-radio-field {
+  position: relative;
+  display: block;
   height: 44.86px;
-  min-height: 44.86px;
 }
 
+/* Hide native radio visually but keep accessible */
 .upload-form .uf-product-tile input[type="radio"] {
-  flex-shrink: 0;
-  width: 16px;
-  height: 16px;
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
   margin: 0;
-  accent-color: var(--uf-btn-bg);
   cursor: pointer;
+  z-index: 1;
+}
+
+/* Custom radio label */
+.upload-form .uf-product-tile .uf-radio-row {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Custom radio circle icon */
+.upload-form .uf-product-tile .uf-radio-icon {
+  display: block;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 100px;
+  border: 2px solid #272e34;
+  background: #fff;
+  fill: transparent;
+  stroke: #fff;
+  stroke-width: 2px;
+  margin-right: 9px;
+  transition: border-color 0.15s, background 0.15s;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Inner dot (hidden by default) */
+.upload-form .uf-product-tile .uf-radio-icon::after {
+  content: '';
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--uf-blue);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.15s;
+}
+
+/* Hover state */
+.upload-form .uf-product-tile input[type="radio"]:hover ~ .uf-radio-row .uf-radio-icon,
+.upload-form .uf-product-tile:hover .uf-radio-icon {
+  border-color: var(--uf-blue);
+}
+
+/* Checked state */
+.upload-form .uf-product-tile input[type="radio"]:checked ~ .uf-radio-row .uf-radio-icon {
+  border-color: var(--uf-blue);
+  border-width: 2px;
+  padding: 3px;
+}
+
+.upload-form .uf-product-tile input[type="radio"]:checked ~ .uf-radio-row .uf-radio-icon::after {
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .upload-form .uf-product-label {
@@ -150,45 +295,32 @@
   margin-top: 5px;
 }
 
-.upload-form .uf-footnote-row {
-  margin-top: 8px;
-}
+.upload-form .uf-footnote-row { margin-top: 8px; }
+.upload-form .uf-footnote { font-size: 13px; font-style: italic; color: #555; }
 
-.upload-form .uf-footnote {
-  font-size: 13px;
-  font-style: italic;
-  color: #555;
-}
-
-/* ─── Form fields ───────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+   3. Form fields
+   ═══════════════════════════════════════════════════════════════════ */
 .upload-form .uf-fields-row {
   display: flex;
-  gap: var(--uf-gap);
+  gap: 16px;
   margin-bottom: 0;
 }
 
-.upload-form .uf-fields-row:has(> :only-child) {
-  max-width: 50%;
-}
-
-.upload-form .uf-fields-row > div {
-  flex: 1;
-  min-width: 0;
-}
-
-.upload-form .uf-field {
-  margin-bottom: 8px;
-}
+.upload-form .uf-fields-row:has(> :only-child) { max-width: 50%; }
+.upload-form .uf-fields-row > div { flex: 1; min-width: 0; }
+.upload-form .uf-field { margin-bottom: 8px; }
 
 .upload-form .uf-field label {
   display: block;
   font-family: 'Inter', sans-serif;
   font-size: 18px;
   font-weight: 400;
-  margin-bottom: 4px;
   color: #000;
+  margin-bottom: 4px;
 }
 
+/* Base input / textarea */
 .upload-form .uf-field input,
 .upload-form .uf-field textarea {
   display: block;
@@ -196,13 +328,16 @@
   box-sizing: border-box;
   padding: 12.06px;
   border: none;
-  border-radius: var(--uf-input-radius);
+  border-radius: var(--uf-radius);
   background: var(--uf-input-bg);
+  box-shadow: var(--uf-shadow);
   font-size: 18px;
   font-family: 'Inter', sans-serif;
-  color: #000;
-  height: var(--uf-input-height);
+  color: var(--uf-body-text);
+  height: var(--uf-input-h);
   outline: none;
+  transition: box-shadow 0.15s;
+  background-repeat: no-repeat;
 }
 
 .upload-form .uf-field textarea {
@@ -211,70 +346,64 @@
   line-height: 1.5;
 }
 
-.upload-form .uf-required-note {
-  font-size: 13px;
-  font-style: italic;
-  color: #555;
+/* Hover + focus: blue inset ring */
+.upload-form .uf-field:hover input:not(:disabled),
+.upload-form .uf-field:hover textarea:not(:disabled) {
+  box-shadow: var(--uf-focus-shadow);
 }
 
-/* ─── Upload DICOM section ──────────────────────────────────────────── */
-.upload-form .uf-upload-section h3 {
-  margin-top: 1em;
+.upload-form .uf-field input:focus:not(:disabled),
+.upload-form .uf-field textarea:focus:not(:disabled) {
+  box-shadow: var(--uf-focus-shadow);
 }
 
-.upload-form .uf-upload-section p {
-  font-size: 18px;
-  line-height: 1.5;
+/* Email icon */
+.upload-form .uf-field input[type="email"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23272e34' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='16' rx='2'/%3E%3Cpolyline points='2,4 12,13 22,4'/%3E%3C/svg%3E");
+  background-position: calc(100% - 15px) center;
+  background-size: 25px;
+  background-repeat: no-repeat;
+  padding-right: 50px;
 }
 
-.upload-form .uf-upload-section strong {
-  font-weight: 700;
+/* Phone icon */
+.upload-form .uf-field input[type="tel"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23272e34' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.07 2.18 2 2 0 012.03 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z'/%3E%3C/svg%3E");
+  background-position: calc(100% - 15px) center;
+  background-size: 25px;
+  background-repeat: no-repeat;
+  padding-right: 50px;
 }
+
+.upload-form .uf-required-note { font-size: 13px; font-style: italic; color: #555; }
+
+/* ── Upload section ───────────────────────────────────────────────── */
+.upload-form .uf-upload-section h3 { margin-top: 1em; }
+.upload-form .uf-upload-section p { font-size: 18px; line-height: 1.5; }
+.upload-form .uf-upload-section strong { font-weight: 700; }
 
 .upload-form .uf-file-input {
   display: inline-flex;
   align-items: center;
   padding: 8px 16px;
-  border: 1px solid var(--uf-btn-bg);
-  color: var(--uf-btn-bg);
+  border: 1px solid var(--uf-blue);
+  color: var(--uf-blue);
   background: #fff;
   font-size: 14px;
   cursor: pointer;
   margin: 8px 0;
   border-radius: 4px;
+  transition: background 0.15s;
 }
+.upload-form .uf-file-input:hover { background: #f0f5ff; }
 
-.upload-form .uf-file-input:hover {
-  background: #f0f5ff;
-}
+/* ── Terms ────────────────────────────────────────────────────────── */
+.upload-form .uf-terms { font-size: 18px; line-height: 1.6; }
+.upload-form .uf-terms p { margin: 8px 0; font-size: 14px; }
+.upload-form .uf-terms > p:first-child { font-size: 18px; font-weight: 700; }
+.upload-form .uf-terms a { color: var(--link-color, #00e); text-decoration: underline; word-break: break-all; }
+.upload-form .uf-terms strong { font-weight: 700; }
 
-/* ─── Terms & conditions ────────────────────────────────────────────── */
-.upload-form .uf-terms {
-  font-size: 18px;
-  line-height: 1.6;
-}
-
-.upload-form .uf-terms p {
-  margin: 8px 0;
-  font-size: 14px;
-}
-
-.upload-form .uf-terms > p:first-child {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.upload-form .uf-terms a {
-  color: var(--link-color, #00e);
-  text-decoration: underline;
-  word-break: break-all;
-}
-
-.upload-form .uf-terms strong {
-  font-weight: 700;
-}
-
-/* Checkboxes */
 .upload-form .uf-checkbox-row {
   display: inline-flex;
   align-items: center;
@@ -282,27 +411,16 @@
   margin-right: 24px;
   font-size: 14px;
 }
+.upload-form .uf-checkbox-row input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; margin: 0; cursor: pointer; }
+.upload-form .uf-checkbox-row a { color: var(--link-color, #00e); text-decoration: underline; }
 
-.upload-form .uf-checkbox-row input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  margin: 0;
-  cursor: pointer;
-}
-
-.upload-form .uf-checkbox-row a {
-  color: var(--link-color, #00e);
-  text-decoration: underline;
-}
-
-/* Submit button */
+/* ── Submit ───────────────────────────────────────────────────────── */
 .upload-form .uf-submit-btn {
   display: inline-block;
-  background: var(--uf-btn-bg);
-  color: var(--uf-btn-color);
+  background: var(--uf-blue);
+  color: #fff;
   border: none;
-  border-radius: var(--uf-btn-radius);
+  border-radius: 100px;
   padding: 16px 32px;
   font-size: 16px;
   font-weight: 600;
@@ -311,66 +429,28 @@
   cursor: pointer;
   margin-top: 24px;
   letter-spacing: 0.5px;
+  transition: background 0.15s;
 }
+.upload-form .uf-submit-btn:hover { background: #0f4fd6; }
 
-.upload-form .uf-submit-btn:hover {
-  background: #0f4fd6;
-}
+/* ── Disclaimer ───────────────────────────────────────────────────── */
+.upload-form .uf-disclaimer-row { margin-top: 32px; }
+.upload-form .uf-disclaimer { border-top: 1px solid #ddd; padding-top: 16px; }
+.upload-form .uf-disclaimer h3 { font-size: 18px; margin-top: 0; }
+.upload-form .uf-disclaimer p { font-size: 12px; font-style: italic; line-height: 1.5; color: #333; }
 
-/* ─── Disclaimer ────────────────────────────────────────────────────── */
-.upload-form .uf-disclaimer-row {
-  margin-top: 32px;
-}
-
-.upload-form .uf-disclaimer {
-  border-top: 1px solid #ddd;
-  padding-top: 16px;
-}
-
-.upload-form .uf-disclaimer h3 {
-  font-size: 18px;
-  margin-top: 0;
-}
-
-.upload-form .uf-disclaimer p {
-  font-size: 12px;
-  font-style: italic;
-  line-height: 1.5;
-  color: #333;
-}
-
-/* Reset EDS button styling within this block */
+/* ── EDS reset ────────────────────────────────────────────────────── */
 main .upload-form .button-container { display: inline; }
 main .upload-form a.button:any-link {
-  background: none;
-  border: none;
-  color: var(--link-color, #00e);
-  font-size: inherit;
-  font-weight: inherit;
-  padding: 0;
-  margin: 0;
-  text-align: left;
-  text-decoration: underline;
-  white-space: normal;
+  background: none; border: none; color: var(--link-color, #00e);
+  font-size: inherit; font-weight: inherit; padding: 0; margin: 0;
+  text-align: left; text-decoration: underline; white-space: normal;
 }
 
-/* ─── Responsive ────────────────────────────────────────────────────── */
+/* ── Responsive ───────────────────────────────────────────────────── */
 @media (max-width: 899px) {
-  .upload-form .uf-fields-row {
-    flex-direction: column;
-  }
-
-  .upload-form .uf-fields-row:has(> :only-child) {
-    max-width: 100%;
-  }
-
-  .upload-form .uf-products {
-    flex-wrap: wrap;
-    gap: 24px;
-    justify-content: flex-start;
-  }
-
-  .upload-form .uf-select-wrapper {
-    width: 100%;
-  }
+  .upload-form .uf-fields-row { flex-direction: column; }
+  .upload-form .uf-fields-row:has(> :only-child) { max-width: 100%; }
+  .upload-form .uf-products { flex-wrap: wrap; gap: 24px; justify-content: flex-start; }
+  .upload-form .uf-select-wrapper { width: 100%; }
 }
