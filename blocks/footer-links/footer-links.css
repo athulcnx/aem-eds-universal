@@ -168,7 +168,7 @@ footer .footer-links a:hover {
 }
 
 .footer-links > div:nth-child(2) > div p:not(:last-child)::after {
-  content: "·";
+  content: "Â·";
   margin-left: 8px;
   color: var(--footer-primary-text);
 }

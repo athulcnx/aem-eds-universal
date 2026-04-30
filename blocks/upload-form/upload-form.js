@@ -1,7 +1,46 @@
 /**
- * Build a custom animated select dropdown matching the source's SlimSelect widget.
+ * Upload Form Block — fully authorable via Universal Editor.
+ *
+ * AEM renders the block's JCR structure as an HTML table-like set of div rows:
+ *   - The first child div (no data-aue-model) holds the block-level property cells
+ *     in the order they appear in component-models.json.
+ *   - Subsequent child divs carry data-aue-model="region-option|product-tile|form-field"
+ *     and their cells hold the item property values in model order.
+ *
+ * On the delivery/preview tier the data-aue-* attributes are absent; the JS reads the
+ * same positional cell values and falls back to built-in defaults for anything missing.
+ */
+
+// ── Cell helpers ─────────────────────────────────────────────────────────────
+
+/** Returns trimmed text content of the nth child cell of a row div. */
+function cellText(row, idx) {
+  const cell = row?.children?.[idx];
+  return cell ? cell.textContent.trim() : '';
+}
+
+/** Returns the first <img> element found in the nth child cell of a row div. */
+function cellImg(row, idx) {
+  const cell = row?.children?.[idx];
+  return cell ? cell.querySelector('img') : null;
+}
+
+/** Returns the raw innerHTML of the nth child cell of a row div (for richtext). */
+function cellHtml(row, idx) {
+  const cell = row?.children?.[idx];
+  return cell ? cell.innerHTML.trim() : '';
+}
+
+// ── Widget builders ───────────────────────────────────────────────────────────
+
+/**
+ * Build a custom animated select dropdown.
+ * @param {Array<{label:string, value:string, isDefault:boolean}>} options
+ * @param {string} name  — native select name attribute
  */
 function buildCustomSelect(options, name) {
+  const defaultOpt = options.find((o) => o.isDefault) || options[0];
+
   const wrapper = document.createElement('div');
   wrapper.className = 'uf-select-wrapper';
 
@@ -10,15 +49,15 @@ function buildCustomSelect(options, name) {
   native.name = name;
   options.forEach((opt) => {
     const o = document.createElement('option');
-    o.value = opt;
-    o.textContent = opt;
-    if (opt.includes('UK/Ireland')) o.selected = true;
+    o.value = opt.value || opt.label;
+    o.textContent = opt.label;
+    if (opt.isDefault || opt === defaultOpt) o.selected = true;
     native.appendChild(o);
   });
 
   const display = document.createElement('span');
   display.className = 'uf-select-display';
-  display.textContent = options.find((o) => o.includes('UK/Ireland')) || options[0];
+  display.textContent = defaultOpt ? defaultOpt.label : '';
 
   const arrowWrap = document.createElement('span');
   arrowWrap.className = 'uf-select-arrow-wrap';
@@ -46,17 +85,17 @@ function buildCustomSelect(options, name) {
   const buildOptions = (filter = '') => {
     list.innerHTML = '';
     options
-      .filter((o) => o.toLowerCase().includes(filter.toLowerCase()))
+      .filter((o) => o.label.toLowerCase().includes(filter.toLowerCase()))
       .forEach((opt) => {
         const item = document.createElement('div');
         item.className = 'uf-select-option';
-        if (opt.includes('UK/Ireland')) item.classList.add('selected');
-        item.textContent = opt;
+        if (opt === defaultOpt || opt.isDefault) item.classList.add('selected');
+        item.textContent = opt.label;
         item.setAttribute('role', 'option');
         item.addEventListener('mousedown', (e) => {
           e.preventDefault();
-          display.textContent = opt;
-          native.value = opt;
+          display.textContent = opt.label;
+          native.value = opt.value || opt.label;
           list.querySelectorAll('.uf-select-option').forEach((el) => el.classList.remove('selected'));
           item.classList.add('selected');
           close(); // eslint-disable-line no-use-before-define
@@ -89,9 +128,14 @@ function buildCustomSelect(options, name) {
 }
 
 /**
- * Build a product tile with a custom radio button.
+ * Build a product selection tile with a custom radio button.
+ * @param {HTMLImageElement|null} imgEl  — cloned <img> from AEM-rendered cell (or null)
+ * @param {string} altText
+ * @param {string} labelText
+ * @param {string} value       — radio value for form submission
+ * @param {string} radioName   — shared radio group name
  */
-function buildProductTile(imgSrc, labelText, name) {
+function buildProductTile(imgEl, altText, labelText, value, radioName) {
   const tile = document.createElement('div');
   tile.className = 'uf-product-tile';
 
@@ -100,7 +144,8 @@ function buildProductTile(imgSrc, labelText, name) {
 
   const radio = document.createElement('input');
   radio.type = 'radio';
-  radio.name = name;
+  radio.name = radioName;
+  radio.value = value || labelText;
   radio.required = true;
 
   const radioRow = document.createElement('label');
@@ -109,7 +154,7 @@ function buildProductTile(imgSrc, labelText, name) {
   const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   iconSvg.setAttribute('viewBox', '0 0 24 24');
   iconSvg.setAttribute('aria-hidden', 'true');
-  iconSvg.className.baseVal = 'uf-radio-icon';
+  iconSvg.classList.add('uf-radio-icon');
   const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
   circle.setAttribute('cx', '12');
   circle.setAttribute('cy', '12');
@@ -126,10 +171,9 @@ function buildProductTile(imgSrc, labelText, name) {
   radioField.appendChild(radioRow);
   tile.appendChild(radioField);
 
-  if (imgSrc) {
-    const img = document.createElement('img');
-    img.src = imgSrc;
-    img.alt = labelText;
+  if (imgEl) {
+    const img = imgEl.cloneNode(true);
+    img.alt = altText || labelText;
     img.loading = 'lazy';
     tile.appendChild(img);
   }
@@ -138,7 +182,11 @@ function buildProductTile(imgSrc, labelText, name) {
 }
 
 /**
- * Build a labelled input/textarea field.
+ * Build a labelled input / textarea field.
+ * @param {string} labelText
+ * @param {string} type        — text | email | tel | textarea
+ * @param {string} name        — input name attribute
+ * @param {boolean} required
  */
 function buildField(labelText, type, name, required) {
   const fieldDiv = document.createElement('div');
@@ -154,7 +202,7 @@ function buildField(labelText, type, name, required) {
     input = document.createElement('input');
     input.type = type || 'text';
   }
-  input.name = name;
+  input.name = name || labelText.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
   if (required) input.required = true;
 
   fieldDiv.appendChild(lbl);
@@ -162,184 +210,12 @@ function buildField(labelText, type, name, required) {
   return fieldDiv;
 }
 
-// ── Static content data ───────────────────────────────────────────────────────
+// ── Default fallback data ─────────────────────────────────────────────────────
+// Used when no item rows are present (block just dropped, not yet configured).
 
-const LANG_OPTIONS = [
-  'UK/Ireland',
-  'Austria', 'Belgium', 'Croatia', 'Czech Republic', 'Denmark',
-  'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Hungary',
-  'Italy', 'Latvia', 'Lithuania', 'Luxembourg', 'Netherlands',
-  'Norway', 'Poland', 'Portugal', 'Romania', 'Serbia', 'Slovakia',
-  'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Turkey',
-];
-
-const PRODUCTS = [
-  { label: 'Tutoplast Cortical Plate', img: '/drafts/images/product-cortical.png' },
-  { label: 'Tutoplast Cortical Granules', img: '/drafts/images/product-granules.png' },
-  { label: 'Tutoplast Cancellous Granules', img: '/drafts/images/product-cancellous.png' },
-  { label: 'Tutoplast Processed Pericardium', img: '/drafts/images/product-pericardium.png' },
-  { label: 'Custom Graft DICOM Upload', img: '/drafts/images/product-custom.png' },
-];
-
-const FORM_FIELDS = [
-  [
-    { label: 'First Name *', type: 'text', name: 'first_name', required: true },
-    { label: 'Last Name *', type: 'text', name: 'last_name', required: true },
-  ],
-  [
-    { label: 'Email Address *', type: 'email', name: 'email', required: true },
-    { label: 'Phone Number *', type: 'tel', name: 'phone', required: true },
-  ],
-  [
-    { label: 'Hospital / Institution', type: 'text', name: 'hospital', required: false },
-    { label: 'City', type: 'text', name: 'city', required: false },
-  ],
-  [
-    { label: 'Country', type: 'text', name: 'country', required: false },
-    { label: 'Zip / Postal Code', type: 'text', name: 'zip', required: false },
-  ],
-  [
-    { label: 'Additional Notes', type: 'textarea', name: 'notes', required: false },
-  ],
-];
-
-export default async function decorate(block) {
-  const formBody = document.createElement('div');
-  formBody.className = 'uf-form-body';
-
-  // ── Section 1: Region / Language ─────────────────────────────────
-  const regionSection = document.createElement('div');
-  regionSection.className = 'uf-section';
-  const regionH3 = document.createElement('h3');
-  regionH3.textContent = 'Region / Language';
-  regionSection.appendChild(regionH3);
-  regionSection.appendChild(buildCustomSelect(LANG_OPTIONS, 'lang_switch'));
-  formBody.appendChild(regionSection);
-
-  // ── Section 2: Product selection ─────────────────────────────────
-  const productSection = document.createElement('div');
-  productSection.className = 'uf-section';
-  const productH3 = document.createElement('h3');
-  productH3.textContent = 'Select Product *';
-  productSection.appendChild(productH3);
-
-  const productsDiv = document.createElement('div');
-  productsDiv.className = 'uf-products';
-  PRODUCTS.forEach(({ label, img }) => {
-    productsDiv.appendChild(buildProductTile(img, label, 'opt_article'));
-  });
-  productSection.appendChild(productsDiv);
-
-  const footnote = document.createElement('p');
-  footnote.className = 'uf-footnote';
-  footnote.textContent = '* Custom Graft products require a DICOM upload.';
-  productSection.appendChild(footnote);
-  formBody.appendChild(productSection);
-
-  // ── Section 3: Contact information ───────────────────────────────
-  const infoSection = document.createElement('div');
-  infoSection.className = 'uf-section';
-  const infoH3 = document.createElement('h3');
-  infoH3.textContent = 'Contact Information';
-  infoSection.appendChild(infoH3);
-
-  FORM_FIELDS.forEach((rowFields) => {
-    const fieldsRow = document.createElement('div');
-    fieldsRow.className = 'uf-fields-row';
-    rowFields.forEach(({ label, type, name, required }) => {
-      fieldsRow.appendChild(buildField(label, type, name, required));
-    });
-    infoSection.appendChild(fieldsRow);
-  });
-
-  const requiredNote = document.createElement('p');
-  requiredNote.className = 'uf-required-note';
-  requiredNote.textContent = '* Required fields';
-  infoSection.appendChild(requiredNote);
-  formBody.appendChild(infoSection);
-
-  // ── Section 4: DICOM upload ───────────────────────────────────────
-  const uploadSection = document.createElement('div');
-  uploadSection.className = 'uf-section uf-upload-section';
-  const uploadH3 = document.createElement('h3');
-  uploadH3.textContent = 'Upload DICOM Files';
-  uploadSection.appendChild(uploadH3);
-
-  const fileLabel = document.createElement('label');
-  fileLabel.className = 'uf-file-input';
-  fileLabel.textContent = 'Select files ...';
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.name = 'files[]';
-  fileInput.accept = '.dcm,.zip,.rar';
-  fileInput.multiple = true;
-  fileInput.style.display = 'none';
-  fileLabel.appendChild(fileInput);
-  uploadSection.appendChild(fileLabel);
-  formBody.appendChild(uploadSection);
-
-  // ── Section 5: Terms + submit ─────────────────────────────────────
-  const termsSection = document.createElement('div');
-  termsSection.className = 'uf-section uf-terms';
-
-  const makeCheckbox = (name, labelHtml, required) => {
-    const cbLabel = document.createElement('label');
-    cbLabel.className = 'uf-checkbox-row';
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.name = name;
-    if (required) cb.required = true;
-    const span = document.createElement('span');
-    span.innerHTML = labelHtml;
-    cbLabel.appendChild(cb);
-    cbLabel.appendChild(span);
-    return cbLabel;
-  };
-
-  termsSection.appendChild(makeCheckbox(
-    'consent_terms',
-    'I agree to the <a href="/terms" target="_blank">Terms &amp; Conditions</a>',
-    true,
-  ));
-  termsSection.appendChild(makeCheckbox(
-    'consent_privacy',
-    'I have read and understood the <a href="/privacy" target="_blank">Privacy Policy</a>',
-    true,
-  ));
-
-  const submitWrapper = document.createElement('div');
-  const submitBtn = document.createElement('button');
-  submitBtn.type = 'submit';
-  submitBtn.className = 'uf-submit-btn';
-  submitBtn.textContent = 'SUBMIT';
-  submitWrapper.appendChild(submitBtn);
-  termsSection.appendChild(submitWrapper);
-  formBody.appendChild(termsSection);
-
-  // ── Section 6: Disclaimer ─────────────────────────────────────────
-  const disclaimer = document.createElement('div');
-  disclaimer.className = 'uf-disclaimer-row';
-  const disclaimerInner = document.createElement('div');
-  disclaimerInner.className = 'uf-disclaimer';
-  disclaimerInner.innerHTML = `ZimVie Inc. and its subsidiaries (collectively "ZimVie") maintain this website
-    for informational purposes. The information on this website is subject to change without notice.
-    ZimVie makes no representations or warranties of any kind regarding the information contained herein.`;
-  disclaimer.appendChild(disclaimerInner);
-  formBody.appendChild(disclaimer);
-
-  // ── Assemble ──────────────────────────────────────────────────────
-  const form = document.createElement('form');
-  form.method = 'post';
-  form.enctype = 'multipart/form-data';
-  form.noValidate = true;
-
-  block.innerHTML = '';
-
-  const bannerDiv = document.createElement('div');
-  bannerDiv.className = 'uf-banner';
-  block.appendChild(bannerDiv);
-
-  while (formBody.firstChild) form.appendChild(formBody.firstChild);
-  formBody.appendChild(form);
-  block.appendChild(formBody);
-}
+const DEFAULT_REGION_OPTIONS = [
+  { label: 'UK/Ireland', value: 'uk-ie', isDefault: true },
+  { label: 'Austria', value: 'at', isDefault: false },
+  { label: 'Belgium', value: 'be', isDefault: false },
+  { label: 'Croatia', value: 'hr', isDefault: false },
+  { label: 'Czech Republic', value: 'cz', isDefault: fa

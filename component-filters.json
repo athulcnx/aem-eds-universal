@@ -40,5 +40,19 @@
       "button",
       "title"
     ]
+  },
+  {
+    "id": "upload-form",
+    "components": [
+      "region-option",
+      "product-tile",
+      "form-field"
+    ]
+  },
+  {
+    "id": "footer-links",
+    "components": [
+      "footer-link-item"
+    ]
   }
 ]

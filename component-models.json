@@ -52,30 +52,12 @@
         "name": "titleType",
         "label": "Title Type",
         "options": [
-          {
-            "name": "h1",
-            "value": "h1"
-          },
-          {
-            "name": "h2",
-            "value": "h2"
-          },
-          {
-            "name": "h3",
-            "value": "h3"
-          },
-          {
-            "name": "h4",
-            "value": "h4"
-          },
-          {
-            "name": "h5",
-            "value": "h5"
-          },
-          {
-            "name": "h6",
-            "value": "h6"
-          }
+          { "name": "h1", "value": "h1" },
+          { "name": "h2", "value": "h2" },
+          { "name": "h3", "value": "h3" },
+          { "name": "h4", "value": "h4" },
+          { "name": "h5", "value": "h5" },
+          { "name": "h6", "value": "h6" }
         ]
       }
     ]
@@ -103,18 +85,9 @@
         "name": "linkType",
         "label": "Type",
         "options": [
-          {
-            "name": "default",
-            "value": ""
-          },
-          {
-            "name": "primary",
-            "value": "primary"
-          },
-          {
-            "name": "secondary",
-            "value": "secondary"
-          }
+          { "name": "default", "value": "" },
+          { "name": "primary", "value": "primary" },
+          { "name": "secondary", "value": "secondary" }
         ]
       }
     ]
@@ -133,10 +106,7 @@
         "name": "style",
         "label": "Style",
         "options": [
-          {
-            "name": "Highlight",
-            "value": "highlight"
-          }
+          { "name": "Highlight", "value": "highlight" }
         ]
       }
     ]
@@ -214,5 +184,202 @@
         "valueType": "string"
       }
     ]
-  }
-]
+  },
+  {
+    "id": "upload-form",
+    "fields": [
+      {
+        "component": "reference",
+        "name": "bannerImage",
+        "label": "Banner Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "bannerAlt",
+        "label": "Banner Alt Text"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "regionHeading",
+        "label": "Region Section Heading"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "productHeading",
+        "label": "Product Section Heading"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "productFootnote",
+        "label": "Product Footnote"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "infoHeading",
+        "label": "Contact Info Heading"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "uploadHeading",
+        "label": "Upload Section Heading"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "uploadAccept",
+        "label": "Accepted File Types"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "requiredNote",
+        "label": "Required Note"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "submitLabel",
+        "label": "Submit Button Label"
+      },
+      {
+        "component": "richtext",
+        "valueType": "string",
+        "name": "consentTermsLabel",
+        "label": "Terms Checkbox Label"
+      },
+      {
+        "component": "richtext",
+        "valueType": "string",
+        "name": "consentPrivacyLabel",
+        "label": "Privacy Checkbox Label"
+      },
+      {
+        "component": "richtext",
+        "valueType": "string",
+        "name": "disclaimerText",
+        "label": "Disclaimer Text"
+      }
+    ]
+  },
+  {
+    "id": "region-option",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "label",
+        "label": "Display Label"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "value",
+        "label": "Value"
+      },
+      {
+        "component": "boolean",
+        "name": "isDefault",
+        "label": "Default selection?"
+      }
+    ]
+  },
+  {
+    "id": "product-tile",
+    "fields": [
+      {
+        "component": "reference",
+        "name": "productImage",
+        "label": "Product Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "productImageAlt",
+        "label": "Image Alt Text"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "productLabel",
+        "label": "Product Name"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "productValue",
+        "label": "Form Value"
+      }
+    ]
+  },
+  {
+    "id": "form-field",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "fieldLabel",
+        "label": "Label"
+      },
+      {
+        "component": "select",
+        "name": "fieldType",
+        "label": "Input Type",
+        "options": [
+          { "name": "Text", "value": "text" },
+          { "name": "Email", "value": "email" },
+          { "name": "Phone", "value": "tel" },
+          { "name": "Textarea", "value": "textarea" }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "fieldName",
+        "label": "Field Name (name attr)"
+      },
+      {
+        "component": "boolean",
+        "name": "fieldRequired",
+        "label": "Required?"
+      },
+      {
+        "component": "number",
+        "valueType": "number",
+        "name": "fieldRow",
+        "label": "Row Group (1-5)"
+      }
+    ]
+  },
+  {
+    "id": "footer-links",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "copyrightText",
+        "label": "Copyright Text"
+      }
+    ]
+  },
+  {
+    "id": "footer-link-item",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkLabel",
+        "label": "Link Label"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "linkHref",
+ 
