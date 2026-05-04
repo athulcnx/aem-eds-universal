@@ -29,7 +29,6 @@
 .upload-form > div { margin: 0; }
 
 /* ── Banner strip ─────────────────────────────────────────────────── */
-/* Source: tutoplast.jpg banner is 170px total, nav overlaps top 66px → 104px visible */
 .upload-form .uf-banner {
   width: 100%;
   height: 104px;
@@ -46,45 +45,419 @@
   padding: 0 24px;
 }
 
-/* ── Step headings ────────────────────────────────────────────────── */
+/* ── Section headings ─────────────────────────────────────────────── */
 .upload-form h3 {
-  font-family: 'Soleil', sans-serif;
-  font-size: 21.06px;
-  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
   color: var(--uf-navy);
-  margin-top: 100px;
-  margin-bottom: 0.8em;
-  line-height: 1.25;
+  margin: 40px 0 20px;
+  padding: 0;
 }
 
-/* First section heading — 76px total gap from banner bottom */
-.upload-form .uf-form-body > form > div:first-child h3 {
-  margin-top: 76px;
+/* ── Sections ────────────────────────────────────────────────────── */
+.upload-form .uf-section {
+  margin-bottom: 8px;
 }
 
-/* Upload DICOM and Disclaimer headings — also need 100px top space */
-.upload-form .uf-upload-section h3 {
-  margin-top: 100px;
+/* ── Region section ──────────────────────────────────────────────── */
+.upload-form .uf-region-section {
+  padding-bottom: 32px;
+}
+
+/* ── Products grid ───────────────────────────────────────────────── */
+.upload-form .uf-products-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  .upload-form .uf-products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .upload-form .uf-products-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Product tile ────────────────────────────────────────────────── */
+.upload-form .uf-product-tile {
+  border: 2px solid #dce3eb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-form .uf-product-tile:hover {
+  border-color: var(--uf-blue);
+  box-shadow: 0 4px 16px rgba(20, 99, 247, 0.1);
+}
+
+.upload-form .uf-product-tile.selected {
+  border-color: var(--uf-blue);
+  box-shadow: 0 0 0 3px rgba(20, 99, 247, 0.15);
+}
+
+.upload-form .uf-product-tile img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Radio field inside product tile ────────────────────────────── */
+.upload-form .uf-radio-field {
+  padding: 12px 14px;
+  flex: 1;
+}
+
+.upload-form .uf-radio-field input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.upload-form .uf-radio-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--uf-body-text);
+  line-height: 1.4;
+}
+
+.upload-form .uf-radio-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  stroke: #c0c8d4;
+  fill: none;
+  transition: stroke 0.2s, fill 0.2s;
+}
+
+.upload-form .uf-product-tile.selected .uf-radio-icon {
+  stroke: var(--uf-blue);
+  fill: var(--uf-blue);
+}
+
+.upload-form .uf-product-tile.selected .uf-radio-icon circle {
+  stroke: var(--uf-blue);
+  fill: #e8f0fe;
+}
+
+/* ── Product footnote ────────────────────────────────────────────── */
+.upload-form .uf-product-footnote {
+  font-size: 14px;
+  color: var(--uf-label-muted);
+  margin-bottom: 8px;
+}
+
+/* ── Form fields ─────────────────────────────────────────────────── */
+.upload-form .uf-field-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.upload-form .uf-field-row-2col .uf-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.upload-form .uf-field-row-1col .uf-field {
+  flex: 1;
+}
+
+.upload-form .uf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.upload-form .uf-field label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--uf-body-text);
+}
+
+.upload-form .uf-field input,
+.upload-form .uf-field textarea {
+  height: var(--uf-input-h);
+  border: none;
+  border-radius: var(--uf-radius);
+  background-color: var(--uf-input-bg);
+  box-shadow: var(--uf-shadow);
+  font-size: 18px;
+  font-family: 'Inter', sans-serif;
+  color: var(--uf-body-text);
+  padding: 0 16px;
+  box-sizing: border-box;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  transition: box-shadow 0.15s;
+}
+
+.upload-form .uf-field textarea {
+  height: 120px;
+  padding: 16px;
+  resize: vertical;
+}
+
+.upload-form .uf-field input:focus,
+.upload-form .uf-field textarea:focus {
+  box-shadow: var(--uf-focus-shadow);
+}
+
+.upload-form .uf-required-note {
+  font-size: 14px;
+  color: var(--uf-label-muted);
+  margin-top: 8px;
+}
+
+@media (max-width: 600px) {
+  .upload-form .uf-field-row {
+    flex-direction: column;
+  }
+}
+
+/* ── Upload section ──────────────────────────────────────────────── */
+.upload-form .uf-upload-desc {
+  font-size: 16px;
+  color: var(--uf-body-text);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.upload-form .uf-upload-note {
+  font-size: 16px;
+  color: var(--uf-body-text);
+  margin-bottom: 8px;
+}
+
+.upload-form .uf-file-drop-zone {
+  border: 2px dashed #c0c8d4;
+  border-radius: var(--uf-radius);
+  background: var(--uf-input-bg);
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+}
+
+.upload-form .uf-file-drop-zone:hover,
+.upload-form .uf-file-drop-zone.drag-over {
+  border-color: var(--uf-blue);
+  background: #f0f5ff;
+}
+
+.upload-form .uf-file-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.upload-form .uf-file-drop-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  pointer-events: none;
+}
+
+.upload-form .uf-file-drop-icon {
+  display: block;
+  width: 48px;
+  height: 48px;
+  color: #7a8a9b;
+}
+
+.upload-form .uf-file-drop-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.upload-form .uf-file-drop-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--uf-body-text);
+}
+
+.upload-form .uf-file-drop-sub {
+  font-size: 13px;
+  color: var(--uf-label-muted);
+}
+
+.upload-form .uf-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.upload-form .uf-file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #dce3eb;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.upload-form .uf-file-name {
+  color: var(--uf-body-text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
+}
+
+.upload-form .uf-file-size {
+  color: var(--uf-label-muted);
+  flex-shrink: 0;
+}
+
+/* ── Consent section ─────────────────────────────────────────────── */
+.upload-form .uf-consent-intro {
+  font-size: 15px;
+  color: var(--uf-body-text);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: #f7f9fb;
+  border-radius: var(--uf-radius);
+  border-left: 4px solid var(--uf-navy);
+}
+
+.upload-form .uf-consent-intro a {
+  color: var(--uf-blue);
+  word-break: break-all;
+}
+
+.upload-form .uf-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.upload-form .uf-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.upload-form .uf-checkbox-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--uf-blue);
+  cursor: pointer;
+}
+
+.upload-form .uf-checkbox-row label {
+  font-size: 15px;
+  color: var(--uf-body-text);
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.upload-form .uf-checkbox-row label a {
+  color: var(--uf-blue);
+}
+
+.upload-form .uf-consent-disclaimer {
+  font-size: 13px;
+  color: var(--uf-label-muted);
+  margin-bottom: 20px;
+}
+
+/* ── Submit button ───────────────────────────────────────────────── */
+.upload-form .uf-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  padding: 0 40px;
+  background: var(--uf-blue);
+  color: #fff;
+  border: none;
+  border-radius: 100px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.upload-form .uf-submit:hover {
+  background: #0f4fd6;
+  box-shadow: 0 4px 16px rgba(20, 99, 247, 0.3);
+}
+
+.upload-form .uf-submit:active {
+  background: #0a3aaa;
+}
+
+/* ── Disclaimer section ──────────────────────────────────────────── */
+.upload-form .uf-disclaimer {
+  background: #f7f9fb;
+  border-top: 1px solid #dce3eb;
+  padding: 32px 24px;
+  margin-top: 40px;
 }
 
 .upload-form .uf-disclaimer h3 {
-  margin-top: 100px;
+  margin-top: 0;
+  font-size: 18px;
+  color: var(--uf-navy);
+}
+
+.upload-form .uf-disclaimer-content {
+  font-size: 13px;
+  color: var(--uf-label-muted);
+  line-height: 1.6;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   1. Region / Language — custom select dropdown
+   Custom Select Widget
    ═══════════════════════════════════════════════════════════════════ */
 .upload-form .uf-select-wrapper {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  width: 300px;
   height: var(--uf-input-h);
-  background: var(--uf-input-bg);
   border-radius: var(--uf-radius);
+  background: var(--uf-input-bg);
   box-shadow: var(--uf-shadow);
-  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   box-sizing: border-box;
+  max-width: 480px;
   transition: box-shadow 0.15s;
   user-select: none;
 }
@@ -94,7 +467,6 @@
   box-shadow: var(--uf-focus-shadow);
 }
 
-/* Selected value display */
 .upload-form .uf-select-display {
   flex: 1 1 100%;
   padding: 0 0 0 10px;
@@ -105,9 +477,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: var(--uf-input-h);
+  cursor: pointer;
 }
 
-/* Arrow container — matches source .ss-arrow (80px wide, full height, flex-end) */
 .upload-form .uf-select-arrow-wrap {
   display: flex;
   align-items: center;
@@ -116,7 +488,6 @@
   height: 100%;
 }
 
-/* Arrow button — closed state (chevron-down), 44×44px circle */
 .upload-form .uf-select-arrow {
   display: block;
   width: 44px;
@@ -134,14 +505,12 @@
   transition: background-color 0.2s, box-shadow 0.2s, background-image 0.15s;
 }
 
-/* Hover on closed arrow — blue ring + light blue bg + blue chevron */
 .upload-form .uf-select-arrow:hover {
   background-color: #f4fbff;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231463f7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   box-shadow: rgb(20 99 247) 0px 0px 0px 2px;
 }
 
-/* Open state — solid blue circle with × (cross/exit) icon */
 .upload-form .uf-select-wrapper.open .uf-select-arrow {
   background-color: #1463f7;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");
@@ -154,7 +523,6 @@
   box-shadow: none;
 }
 
-/* Hidden native select (for form submission) */
 .upload-form .uf-select {
   position: absolute;
   opacity: 0;
@@ -163,7 +531,6 @@
   height: 1px;
 }
 
-/* Dropdown panel — scaleY animation from top, matching source exactly */
 .upload-form .uf-select-dropdown {
   position: absolute;
   top: calc(var(--uf-input-h) + 2px);
@@ -174,7 +541,6 @@
   box-shadow: rgba(17 17 55 / 0.1) 0px 16px 24px;
   z-index: 100;
   box-sizing: border-box;
-  /* Animation — source uses scaleY(0)→scaleY(1), transform-origin: center top */
   transform-origin: center top;
   transform: scaleY(0);
   opacity: 0;
@@ -188,7 +554,6 @@
   pointer-events: auto;
 }
 
-/* Search row — 10px solid white border all sides (source: border:10px solid #fff) */
 .upload-form .uf-select-search {
   display: flex;
   flex-direction: row;
@@ -199,7 +564,6 @@
   box-sizing: border-box;
 }
 
-/* Search input — 64px high, search icon on right, inset shadow */
 .upload-form .uf-select-search input {
   display: inline-flex;
   flex: 1 1 auto;
@@ -227,11 +591,36 @@
   box-shadow: var(--uf-focus-shadow);
 }
 
-/* Options list — scrollable inner container, max 400px like source */
 .upload-form .uf-select-list {
   max-height: 400px;
   overflow: hidden auto;
   border-radius: 0 0 var(--uf-radius) var(--uf-radius);
 }
 
-/* Option items — 64px, alternat
+.upload-form .uf-select-option {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  color: var(--uf-body-text);
+  cursor: pointer;
+  transition: background 0.1s;
+  box-sizing: border-box;
+}
+
+.upload-form .uf-select-option:nth-child(even) {
+  background: #f7f9fb;
+}
+
+.upload-form .uf-select-option:hover {
+  background: #e8f0fe;
+  color: var(--uf-blue);
+}
+
+.upload-form .uf-select-option.selected {
+  background: #e8f0fe;
+  color: var(--uf-blue);
+  font-weight: 600;
+}
