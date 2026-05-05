@@ -219,6 +219,21 @@
           }
         },
         {
+          "title": "Disclaimer",
+          "id": "disclaimer",
+          "plugins": {
+            "xwalk": {
+              "page": {
+                "resourceType": "core/franklin/components/block/v1/block/item",
+                "template": {
+                  "name": "Disclaimer",
+                  "model": "disclaimer"
+                }
+              }
+            }
+          }
+        },
+        {
           "title": "Footer Links",
           "id": "footer-links",
           "plugins": {

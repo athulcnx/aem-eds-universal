@@ -60,6 +60,21 @@
           }
         }
       }
+    },
+    {
+      "title": "Disclaimer",
+      "id": "disclaimer",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "Disclaimer",
+              "model": "disclaimer"
+            }
+          }
+        }
+      }
     }
   ],
   "models": [
@@ -242,7 +257,18 @@
           "component": "number",
           "valueType": "number",
           "name": "fieldRow",
-          "label": "Row Group (1–5)"
+          "label": "Row Group (15)"
+        }
+      ]
+    },
+    {
+      "id": "disclaimer",
+      "fields": [
+        {
+          "component": "richtext",
+          "valueType": "string",
+          "name": "disclaimerText",
+          "label": "Disclaimer Text"
         }
       ]
     }
@@ -253,7 +279,8 @@
       "components": [
         "region-option",
         "product-tile",
-        "form-field"
+        "form-field",
+        "disclaimer"
       ]
     }
   ]

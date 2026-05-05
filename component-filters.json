@@ -46,7 +46,8 @@
     "components": [
       "region-option",
       "product-tile",
-      "form-field"
+      "form-field",
+      "disclaimer"
     ]
   },
   {

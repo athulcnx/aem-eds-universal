@@ -369,6 +369,17 @@
     ]
   },
   {
+    "id": "disclaimer",
+    "fields": [
+      {
+        "component": "richtext",
+        "valueType": "string",
+        "name": "disclaimerText",
+        "label": "Disclaimer Text"
+      }
+    ]
+  },
+  {
     "id": "footer-links",
     "fields": [
       {
