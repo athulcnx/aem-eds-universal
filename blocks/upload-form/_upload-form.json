@@ -1,0 +1,260 @@
+{
+  "definitions": [
+    {
+      "title": "Upload Form",
+      "id": "upload-form",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block",
+            "template": {
+              "name": "Upload Form",
+              "model": "upload-form",
+              "filter": "upload-form"
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Region Option",
+      "id": "region-option",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "Region Option",
+              "model": "region-option"
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Product Tile",
+      "id": "product-tile",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "Product Tile",
+              "model": "product-tile"
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Form Field",
+      "id": "form-field",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "Form Field",
+              "model": "form-field"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "upload-form",
+      "fields": [
+        {
+          "component": "reference",
+          "name": "bannerImage",
+          "label": "Banner Image",
+          "multi": false
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "bannerAlt",
+          "label": "Banner Alt Text"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "regionHeading",
+          "label": "Region Section Heading",
+          "value": "1. Select Region / Language"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "productHeading",
+          "label": "Product Section Heading",
+          "value": "2. Choose Product*"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "productFootnote",
+          "label": "Product Footnote",
+          "value": "*Product clearance and availability may be limited to certain countries/regions."
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "infoHeading",
+          "label": "Contact Info Heading",
+          "value": "3. Please Fill in the Following Information"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "uploadHeading",
+          "label": "Upload Section Heading",
+          "value": "4. Upload DICOM Data"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "uploadNote",
+          "label": "Upload Note",
+          "value": "* Please note the following information for the data transfer:"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "uploadFormats",
+          "label": "Accepted File Formats",
+          "value": ".pdf, .zip, .rar"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "submitLabel",
+          "label": "Submit Button Label",
+          "value": "SUBMIT FORM"
+        },
+        {
+          "component": "richtext",
+          "valueType": "string",
+          "name": "consentTermsLabel",
+          "label": "Terms Checkbox Label",
+          "value": "*I agree"
+        },
+        {
+          "component": "richtext",
+          "valueType": "string",
+          "name": "consentPrivacyLabel",
+          "label": "Privacy Checkbox Label",
+          "value": "*I Accept the <a href=\"https://www.zimvie.eu/en/privacy-notice.html\">Privacy Policy</a>"
+        },
+        {
+          "component": "richtext",
+          "valueType": "string",
+          "name": "disclaimerText",
+          "label": "Disclaimer Text"
+        }
+      ]
+    },
+    {
+      "id": "region-option",
+      "fields": [
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "label",
+          "label": "Display Label"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "value",
+          "label": "Value (e.g. uk-ie-en)"
+        },
+        {
+          "component": "boolean",
+          "name": "isDefault",
+          "label": "Default selection?"
+        }
+      ]
+    },
+    {
+      "id": "product-tile",
+      "fields": [
+        {
+          "component": "reference",
+          "name": "productImage",
+          "label": "Product Image",
+          "multi": false
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "productImageAlt",
+          "label": "Image Alt Text"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "productLabel",
+          "label": "Product Name"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "productValue",
+          "label": "Form Submission Value"
+        }
+      ]
+    },
+    {
+      "id": "form-field",
+      "fields": [
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "fieldLabel",
+          "label": "Label"
+        },
+        {
+          "component": "select",
+          "name": "fieldType",
+          "label": "Input Type",
+          "options": [
+            { "name": "Text", "value": "text" },
+            { "name": "Email", "value": "email" },
+            { "name": "Phone", "value": "tel" },
+            { "name": "Textarea", "value": "textarea" }
+          ]
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "fieldName",
+          "label": "Field Name (name attribute)"
+        },
+        {
+          "component": "boolean",
+          "name": "fieldRequired",
+          "label": "Required?"
+        },
+        {
+          "component": "number",
+          "valueType": "number",
+          "name": "fieldRow",
+          "label": "Row Group (1–5)"
+        }
+      ]
+    }
+  ],
+  "filters": [
+    {
+      "id": "upload-form",
+      "components": [
+        "region-option",
+        "product-tile",
+        "form-field"
+      ]
+    }
+  ]
+}

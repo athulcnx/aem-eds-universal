@@ -536,10 +536,10 @@ function buildConsentSection(disclaimerHtml, termsHtml, privacyHtml, submitLabel
   return section;
 }
 
-// ─── Child item parsers ───────────────────────────────────────────────────────
+// ─── Child item parsers (UE JCR row/cell model) ──────────────────────────────
 
 /**
- * Parse a region-option child item row.
+ * Parse a region-option child item row (UE model).
  * Cells: [0] label  [1] value  [2] isDefault("true")
  */
 function parseRegionOptionRow(row) {
@@ -551,7 +551,7 @@ function parseRegionOptionRow(row) {
 }
 
 /**
- * Parse a product-tile child item row.
+ * Parse a product-tile child item row (UE model).
  * Cells: [0] productImage(<img>)  [1] productImageAlt  [2] productLabel  [3] productValue
  */
 function parseProductTileRow(row) {
@@ -564,7 +564,7 @@ function parseProductTileRow(row) {
 }
 
 /**
- * Parse a form-field child item row.
+ * Parse a form-field child item row (UE model).
  * Cells: [0] fieldLabel  [1] fieldType  [2] fieldName  [3] fieldRequired  [4] fieldRow
  */
 function parseFormFieldRow(row) {
@@ -572,18 +572,17 @@ function parseFormFieldRow(row) {
     label: cellText(row, 0),
     type: cellText(row, 1) || 'text',
     name: cellText(row, 2) || cellText(row, 0).toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, ''),
-    required: cellText(row, 3).toLowerCase() === 'true',
+    required: cellText(row, 3).toLowerCase() === 'true' || cellText(row, 3) === 'required',
     row: parseInt(cellText(row, 4), 10) || 1,
   };
 }
 
 /**
- * Identify what kind of child item a row is by its cell count.
+ * Identify what kind of child item a row is.
+ * Checks data-aue-model first (UE author tier), then falls back to cell count.
  * region-option: 3 cells
- * product-tile:  4 cells
- * form-field:    5 cells
- *
- * Also checks the data-aue-model attribute if present (author-tier only).
+ * product-tile:  4 cells (first cell contains <img>)
+ * form-field:    5 cells  OR 2 cells with pipe-delimited text
  */
 function classifyChildRow(row) {
   const model = row.getAttribute?.('data-aue-model') || '';
@@ -593,9 +592,251 @@ function classifyChildRow(row) {
 
   const count = row.children.length;
   if (count === 3) return 'region-option';
-  if (count === 4) return 'product-tile';
+  if (count === 4) {
+    // 4-cell row: product-tile if first cell has an image, else something else
+    return 'product-tile';
+  }
   if (count === 5) return 'form-field';
   return null;
+}
+
+// ─── Legacy pipe-delimited markdown format parser ────────────────────────────
+// Handles the old Google Docs / SharePoint migration format where data is
+// encoded as "label|type|name|required" inside <p> elements.
+
+/**
+ * Detect whether this block is using the legacy pipe-delimited format
+ * (as opposed to the UE JCR row/cell model).
+ * Heuristic: if row[0] has a single cell containing a <picture>/<img> AND
+ * row[1] has a single cell containing an <h3> + pipe text, it's legacy.
+ * More robustly: look for rows with single cells whose text contains "|".
+ */
+function isLegacyFormat(rows) {
+  // Check if any of the first 15 rows has a single cell with pipe-delimited text
+  const sample = rows.slice(0, 16);
+  return sample.some((row) => {
+    if (row.children.length === 1) {
+      const text = row.children[0]?.textContent?.trim() || '';
+      return text.includes('|') && !text.startsWith('http');
+    }
+    // Also check multi-cell rows where individual cells contain pipe-delimited text
+    if (row.children.length >= 2) {
+      for (let i = 0; i < row.children.length; i += 1) {
+        const t = row.children[i]?.textContent?.trim() || '';
+        if (t.includes('|') && !t.startsWith('http')) return true;
+      }
+    }
+    return false;
+  });
+}
+
+/**
+ * Parse the legacy pipe-delimited block format into structured data objects.
+ * Returns { bannerImg, bannerAlt, regionHeading, regionOptions,
+ *           productHeading, products, productFootnote,
+ *           infoHeading, formFields,
+ *           uploadHeading, uploadNote, uploadFormats,
+ *           disclaimerHtml, termsHtml, privacyHtml, submitLabel }
+ */
+function parseLegacyFormat(rows) {
+  const data = {
+    bannerImg: null,
+    bannerAlt: '',
+    regionHeading: '',
+    regionOptions: [],
+    productHeading: '',
+    products: [],
+    productFootnote: '',
+    infoHeading: '',
+    formFields: [],
+    uploadHeading: '',
+    uploadNote: '',
+    uploadFormats: '',
+    disclaimerHtml: '',
+    termsHtml: '',
+    privacyHtml: '',
+    submitLabel: '',
+  };
+
+  // Track state as we scan through rows
+  let currentSection = null; // 'region'|'products'|'info'|'upload'|'consent'|'disclaimer'
+  let formFieldRowCounter = 1;
+  let pendingProductImages = []; // buffer for product image cells
+
+  rows.forEach((row) => {
+    const cellCount = row.children.length;
+    const firstCell = row.children[0];
+    const firstCellText = firstCell?.textContent?.trim() || '';
+    const firstCellHtml = firstCell?.innerHTML?.trim() || '';
+
+    // ── Single-cell rows ──────────────────────────────────────────────────
+    if (cellCount === 1) {
+      // Row containing banner image (picture/img element, no text)
+      const imgEl = firstCell?.querySelector('img');
+      if (imgEl && !firstCellText) {
+        data.bannerImg = imgEl;
+        return;
+      }
+
+      // h3 heading → determines current section
+      const h3 = firstCell?.querySelector('h3');
+      if (h3) {
+        const headingText = h3.textContent.trim();
+        if (/select region/i.test(headingText)) {
+          currentSection = 'region';
+          data.regionHeading = headingText;
+        } else if (/choose product/i.test(headingText)) {
+          currentSection = 'products';
+          data.productHeading = headingText;
+          pendingProductImages = [];
+        } else if (/fill in/i.test(headingText) || /information/i.test(headingText)) {
+          currentSection = 'info';
+          data.infoHeading = headingText;
+          formFieldRowCounter = 1;
+        } else if (/upload/i.test(headingText)) {
+          currentSection = 'upload';
+          data.uploadHeading = headingText;
+          // Also grab any sub-content in this same cell
+          const paras = [...(firstCell?.querySelectorAll('p') || [])];
+          paras.forEach((p) => {
+            const t = p.textContent.trim();
+            if (/please note/i.test(t)) data.uploadNote = t;
+            else if (/accepted file/i.test(t) || /\.pdf/i.test(t)) {
+              data.uploadFormats = t.replace(/^accepted file formats:\s*/i, '').replace(/\s*\.\s*/g, ', ').replace(/^,\s*/, '');
+              if (!data.uploadFormats) data.uploadFormats = '.pdf, .zip, .rar';
+            }
+          });
+        } else if (/disclaimer/i.test(headingText)) {
+          currentSection = 'disclaimer';
+          // Capture the em/italic content as disclaimer
+          const em = firstCell?.querySelector('em, i, p');
+          if (em) data.disclaimerHtml = em.outerHTML || em.innerHTML;
+        }
+        return;
+      }
+
+      // Region dropdown: "UK/Ireland (EN)|Austria (DE)|..."
+      if (currentSection === 'region' && firstCellText.includes('|')) {
+        const parts = firstCellText.split('|');
+        data.regionOptions = parts.map((label, idx) => ({
+          label: label.trim(),
+          value: label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          isDefault: idx === 0,
+        }));
+        return;
+      }
+
+      // Upload section: note + formats (already handled in h3 block above via paras)
+      if (currentSection === 'upload') {
+        const t = firstCellText;
+        if (/please note/i.test(t)) { data.uploadNote = t; return; }
+        if (/accepted file/i.test(t) || /\.pdf/i.test(t)) {
+          data.uploadFormats = t.replace(/accepted file formats:\s*/i, '');
+          return;
+        }
+        // file-upload row: "file-upload|files[]|.pdf,.zip,.rar" — skip, handled in buildUploadSection
+        if (/^file-upload/i.test(t)) return;
+      }
+
+      // Product footnote (em/italic, single cell, after products section)
+      if (currentSection === 'products') {
+        const em = firstCell?.querySelector('em');
+        if (em && em.textContent.includes('*Product')) {
+          data.productFootnote = em.textContent.trim();
+          return;
+        }
+      }
+
+      // Consent section: starts with "By clicking..."
+      if (firstCellText.includes('By clicking') || firstCellHtml.includes('By clicking')) {
+        currentSection = 'consent';
+      }
+
+      // Consent section content: checkboxes and submit
+      if (currentSection === 'consent') {
+        const paras = [...(firstCell?.querySelectorAll('p') || [])];
+        const disclaimerParas = [];
+        paras.forEach((p) => {
+          const t = p.textContent.trim();
+          const html = p.innerHTML.trim();
+          if (/^checkbox\|statement\|/i.test(t)) {
+            // "*I agree"
+            data.termsHtml = t.replace(/^checkbox\|statement\|/i, '').replace(/\|required$/i, '').trim();
+          } else if (/^checkbox\|policy\|/i.test(t)) {
+            // "*I Accept the Privacy Policy"
+            data.privacyHtml = html.replace(/^checkbox\|policy\|/i, '').replace(/\|required$/i, '').trim();
+          } else if (/^submit\|/i.test(t)) {
+            data.submitLabel = t.replace(/^submit\|/i, '').trim();
+          } else {
+            disclaimerParas.push(html);
+          }
+        });
+        if (disclaimerParas.length > 0 && !data.disclaimerHtml) {
+          data.disclaimerHtml = disclaimerParas.map((h) => `<p>${h}</p>`).join('');
+        }
+        return;
+      }
+
+      // Disclaimer section (Disclaimer h3 already handled; gather em content)
+      if (currentSection === 'disclaimer') {
+        const em = firstCell?.querySelector('em');
+        if (em) data.disclaimerHtml = `<p>${em.outerHTML}</p>`;
+        return;
+      }
+
+      // "* Required fields" note — skip
+      if (/required fields/i.test(firstCellText)) return;
+    }
+
+    // ── Multi-cell rows ───────────────────────────────────────────────────
+    if (cellCount >= 2) {
+      // Products section: alternating image|label pairs in a multi-cell row
+      if (currentSection === 'products') {
+        // Scan cells: odd cells may be images, even cells may be labels
+        // Pattern from draft HTML: cell0=img, cell1=label, cell2=img, cell3=label...
+        for (let i = 0; i < cellCount; i += 2) {
+          const imgCell = row.children[i];
+          const labelCell = row.children[i + 1];
+          const img = imgCell?.querySelector('img');
+          const labelText = labelCell?.textContent?.trim() || '';
+          if (img || labelText) {
+            data.products.push({
+              imgEl: img || null,
+              imgAlt: img?.alt || labelText,
+              label: labelText || (img?.alt || ''),
+              value: (labelText || img?.alt || '').toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+            });
+          }
+        }
+        return;
+      }
+
+      // Info section: form field rows (2 cells, each containing "label|type|name|required")
+      if (currentSection === 'info') {
+        const rowFields = [];
+        for (let i = 0; i < cellCount; i += 1) {
+          const cellTxt = row.children[i]?.textContent?.trim() || '';
+          if (cellTxt.includes('|')) {
+            const parts = cellTxt.split('|');
+            const label = parts[0]?.trim() || '';
+            const type = parts[1]?.trim() || 'text';
+            const name = parts[2]?.trim() || label.toLowerCase().replace(/\W+/g, '_');
+            const required = (parts[3]?.trim() || '') === 'required';
+            if (label) {
+              rowFields.push({ label, type, name, required, row: formFieldRowCounter });
+            }
+          }
+        }
+        if (rowFields.length > 0) {
+          data.formFields.push(...rowFields);
+          formFieldRowCounter += 1;
+        }
+        return;
+      }
+    }
+  });
+
+  return data;
 }
 
 // ─── Main decorate ────────────────────────────────────────────────────────────
@@ -603,49 +844,98 @@ function classifyChildRow(row) {
 export default async function decorate(block) {
   const rows = [...block.children];
 
-  // ── 1. Read block-level properties (positional) ───────────────────────────
-  const bannerImg = cellImg(rows[0], 0);
-  const bannerAlt = cellText(rows[1], 0);
-  const regionHeading = cellText(rows[2], 0);
-  const productHeading = cellText(rows[3], 0);
-  const productFootnote = cellText(rows[4], 0);
-  const infoHeading = cellText(rows[5], 0);
-  const uploadHeading = cellText(rows[6], 0);
-  const uploadNote = cellText(rows[7], 0);
-  const uploadFormats = cellText(rows[8], 0);
-  const submitLabel = cellText(rows[9], 0);
-  const consentTermsHtml = cellHtml(rows[10], 0);
-  const consentPrivacyHtml = cellHtml(rows[11], 0);
-  const disclaimerHtml = cellHtml(rows[12], 0);
+  let bannerImg;
+  let bannerAlt;
+  let regionHeading;
+  let regionOptions = [];
+  let productHeading;
+  let products = [];
+  let productFootnote;
+  let infoHeading;
+  let formFields = [];
+  let uploadHeading;
+  let uploadNote;
+  let uploadFormats;
+  let disclaimerHtml;
+  let termsHtml;
+  let privacyHtml;
+  let submitLabel;
 
-  // ── 2. Read child item rows (rows 13+) ────────────────────────────────────
-  const regionOptions = [];
-  const products = [];
-  const formFields = [];
+  // ── Detect format and parse ────────────────────────────────────────────
+  if (isLegacyFormat(rows)) {
+    // ── Legacy pipe-delimited markdown format (Google Docs / SharePoint) ──
+    const d = parseLegacyFormat(rows);
+    bannerImg = d.bannerImg;
+    bannerAlt = d.bannerAlt;
+    regionHeading = d.regionHeading;
+    regionOptions = d.regionOptions;
+    productHeading = d.productHeading;
+    products = d.products;
+    productFootnote = d.productFootnote;
+    infoHeading = d.infoHeading;
+    formFields = d.formFields;
+    uploadHeading = d.uploadHeading;
+    uploadNote = d.uploadNote;
+    uploadFormats = d.uploadFormats;
+    disclaimerHtml = d.disclaimerHtml;
+    termsHtml = d.termsHtml;
+    privacyHtml = d.privacyHtml;
+    submitLabel = d.submitLabel;
+  } else {
+    // ── UE JCR row/cell model (AEM Universal Editor authored content) ──────
+    // Block-level property row order (matches _upload-form.json model):
+    //  Row 0  → bannerImage
+    //  Row 1  → bannerAlt
+    //  Row 2  → regionHeading
+    //  Row 3  → productHeading
+    //  Row 4  → productFootnote
+    //  Row 5  → infoHeading
+    //  Row 6  → uploadHeading
+    //  Row 7  → uploadNote
+    //  Row 8  → uploadFormats
+    //  Row 9  → submitLabel
+    //  Row 10 → consentTermsLabel
+    //  Row 11 → consentPrivacyLabel
+    //  Row 12 → disclaimerText
+    bannerImg = cellImg(rows[0], 0);
+    bannerAlt = cellText(rows[1], 0);
+    regionHeading = cellText(rows[2], 0);
+    productHeading = cellText(rows[3], 0);
+    productFootnote = cellText(rows[4], 0);
+    infoHeading = cellText(rows[5], 0);
+    uploadHeading = cellText(rows[6], 0);
+    uploadNote = cellText(rows[7], 0);
+    uploadFormats = cellText(rows[8], 0);
+    submitLabel = cellText(rows[9], 0);
+    termsHtml = cellHtml(rows[10], 0);
+    privacyHtml = cellHtml(rows[11], 0);
+    disclaimerHtml = cellHtml(rows[12], 0);
 
-  rows.slice(BLOCK_PROP_ROWS).forEach((row) => {
-    const type = classifyChildRow(row);
-    if (type === 'region-option') {
-      const opt = parseRegionOptionRow(row);
-      if (opt.label) regionOptions.push(opt);
-    } else if (type === 'product-tile') {
-      const tile = parseProductTileRow(row);
-      if (tile.label) products.push(tile);
-    } else if (type === 'form-field') {
-      const field = parseFormFieldRow(row);
-      if (field.label) formFields.push(field);
-    }
-  });
+    // Child item rows (rows 13+)
+    rows.slice(BLOCK_PROP_ROWS).forEach((row) => {
+      const type = classifyChildRow(row);
+      if (type === 'region-option') {
+        const opt = parseRegionOptionRow(row);
+        if (opt.label) regionOptions.push(opt);
+      } else if (type === 'product-tile') {
+        const tile = parseProductTileRow(row);
+        if (tile.label) products.push(tile);
+      } else if (type === 'form-field') {
+        const field = parseFormFieldRow(row);
+        if (field.label) formFields.push(field);
+      }
+    });
+  }
 
-  // ── 3. Apply defaults when child items not yet authored ───────────────────
+  // ── Apply defaults when items not yet authored ───────────────────────────
   const finalRegionOptions = regionOptions.length > 0 ? regionOptions : DEFAULT_REGION_OPTIONS;
   const finalProducts = products.length > 0 ? products : DEFAULT_PRODUCTS;
   const finalFields = formFields.length > 0 ? formFields : DEFAULT_FIELDS;
 
-  // ── 4. Render ─────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
   block.innerHTML = '';
 
-  // Banner
+  // Banner (only shown when bannerImage is authored or present in legacy format)
   if (bannerImg) {
     block.appendChild(buildBannerSection(bannerImg, bannerAlt));
   }
@@ -664,8 +954,8 @@ export default async function decorate(block) {
   form.appendChild(buildUploadSection(uploadHeading, uploadNote, uploadFormats));
   form.appendChild(buildConsentSection(
     disclaimerHtml || null,
-    consentTermsHtml || null,
-    consentPrivacyHtml || null,
+    termsHtml || null,
+    privacyHtml || null,
     submitLabel,
   ));
 

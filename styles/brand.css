@@ -1,12 +1,31 @@
+/* ZimVie CuztomGraft Brand Tokens
+   Matched from cuztomgraft.zimvie.com/en-GB
+   ──────────────────────────────────────── */
 :root {
-  --heading-font-family: "Soleil", sans-serif;
-  --body-font-family: "Inter", sans-serif;
+  /* Fonts */
+  --heading-font-family: "Soleil", "Arial", sans-serif;
+  --body-font-family: "Inter", "Arial", sans-serif;
+
+  /* Core palette */
+  --zimvie-navy: #0b2143;
+  --zimvie-blue: #1463f7;
+  --zimvie-cyan: #00acd7;
+  --zimvie-cyan-hover: #009dbf;
+  --zimvie-input-bg: #f7f9fb;
+  --zimvie-muted: #58585d;
+  --zimvie-body-text: #272e34;
+  --zimvie-border: #dce3eb;
+
+  /* EDS variable overrides */
   --background-color: #ffffff;
-  --text-color: rgb(0, 0, 0);
-  --link-color: rgb(0, 0, 238);
-  --link-hover-color: rgb(0, 0, 180);
+  --text-color: var(--zimvie-body-text);
+  --link-color: var(--zimvie-blue);
+  --link-hover-color: #0044fc;
   --section-padding: 0px;
   --nav-height: 66px;
 }
 
-html, body { overflow: auto !important; }
+html,
+body {
+  overflow: auto !important;
+}

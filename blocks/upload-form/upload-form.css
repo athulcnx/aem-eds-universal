@@ -2,20 +2,24 @@
    Upload Form Block — ZimVie CuztomGraft
    ═══════════════════════════════════════════════════════════════════ */
 .upload-form {
+  /* ZimVie CuztomGraft design tokens */
   --uf-navy: #0b2143;
+  --uf-blue: #1463f7;
+  --uf-blue-hover: #0044fc;
   --uf-cyan: #00acd7;
+  --uf-cyan-hover: #009dbf;
   --uf-input-bg: #f7f9fb;
-  --uf-input-h: 64px;
-  --uf-radius: 8px;
-  --uf-shadow: rgb(220 220 220) 0px 2px 2px -1px inset;
-  --uf-focus-shadow: rgb(0 172 215) 0px 0px 0px 2px inset;
+  --uf-input-h: 48px;
+  --uf-radius: 4px;
+  --uf-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+  --uf-focus-shadow: inset 0 0 0 2px var(--uf-cyan);
   --uf-body-text: #272e34;
   --uf-label-muted: #58585d;
 
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', 'Arial', sans-serif;
   font-size: 16px;
-  color: #000;
-  background-image: url('/drafts/images/cover-bg.png');
+  color: var(--uf-body-text);
+  /* Background watermark — pulled from AEM DAM at runtime; no local draft path */
   background-size: 100% auto;
   background-position: top center;
   background-repeat: no-repeat;
@@ -75,19 +79,24 @@
   height: var(--uf-input-h);
   border-radius: var(--uf-radius);
   background: var(--uf-input-bg);
+  border: 1px solid #d0d5dd;
   box-shadow: var(--uf-shadow);
   display: flex;
   flex-direction: row;
   align-items: center;
   box-sizing: border-box;
   max-width: 300px;
-  transition: box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
   user-select: none;
 }
 
-.upload-form .uf-select-wrapper:hover,
+.upload-form .uf-select-wrapper:hover {
+  border-color: var(--uf-cyan);
+}
+
 .upload-form .uf-select-wrapper.open {
-  box-shadow: var(--uf-focus-shadow);
+  border-color: var(--uf-blue);
+  box-shadow: 0 0 0 3px rgba(20, 99, 247, 0.15);
 }
 
 .upload-form .uf-select-display {
@@ -237,13 +246,13 @@
 }
 
 .upload-form .uf-select-option:hover {
-  background: #e6f8fd;
-  color: var(--uf-cyan);
+  background: #e8f0fe;
+  color: var(--uf-blue);
 }
 
 .upload-form .uf-select-option.selected {
-  background: #e6f8fd;
-  color: var(--uf-cyan);
+  background: var(--uf-blue);
+  color: #fff;
   font-weight: 600;
 }
 
@@ -403,12 +412,12 @@
 .upload-form .uf-field input,
 .upload-form .uf-field textarea {
   height: var(--uf-input-h);
-  border: none;
+  border: 1px solid #d0d5dd;
   border-radius: var(--uf-radius);
   background-color: var(--uf-input-bg);
   box-shadow: var(--uf-shadow);
   font-size: 16px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', 'Arial', sans-serif;
   color: var(--uf-body-text);
   padding: 0 14px;
   box-sizing: border-box;
@@ -416,7 +425,7 @@
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
-  transition: box-shadow 0.15s;
+  transition: box-shadow 0.15s, border-color 0.15s;
 }
 
 .upload-form .uf-field textarea {
@@ -427,12 +436,14 @@
 
 .upload-form .uf-field input:hover,
 .upload-form .uf-field textarea:hover {
-  box-shadow: rgb(0 172 215 / 0.35) 0px 0px 0px 1.5px inset, var(--uf-shadow);
+  border-color: var(--uf-cyan);
 }
 
 .upload-form .uf-field input:focus,
 .upload-form .uf-field textarea:focus {
-  box-shadow: var(--uf-focus-shadow);
+  border-color: var(--uf-blue);
+  box-shadow: 0 0 0 3px rgba(20, 99, 247, 0.15);
+  outline: none;
 }
 
 @media (max-width: 600px) {
@@ -477,26 +488,27 @@
   pointer-events: none;
 }
 
-/* "Select files …" CTA button — matches original ZimVie style */
+/* "Select files …" CTA button — matches original ZimVie outline button style */
 .upload-form .uf-file-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 40px;
   min-width: 120px;
-  max-width: 160px;
-  padding: 0 18px;
+  max-width: 180px;
+  padding: 0 20px;
   border: 1px solid var(--uf-cyan);
   color: var(--uf-cyan);
   background: transparent;
   border-radius: 2px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', 'Arial', sans-serif;
   font-size: 14px;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
   box-sizing: border-box;
+  text-transform: none;
 }
 
 .upload-form .uf-file-cta:hover {
@@ -634,31 +646,31 @@
   color: var(--uf-cyan);
 }
 
-/* ── Submit button ───────────────────────────────────────────────── */
+/* ── Submit button — matches original ZimVie (#1463f7 blue, pill, uppercase) */
 .upload-form .uf-submit {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 48px;
+  height: 52px;
   padding: 0 48px;
-  background: var(--uf-cyan);
+  background: var(--uf-blue);
   color: #fff;
   border: none;
   border-radius: 100px;
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
+  font-family: 'Inter', 'Arial', sans-serif;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
   transition: background 0.2s, box-shadow 0.2s;
 }
 
 .upload-form .uf-submit:hover {
-  background: #009dbf;
-  box-shadow: 0 4px 14px rgba(0, 172, 215, 0.35);
+  background: var(--uf-blue-hover);
+  box-shadow: 0 4px 14px rgba(20, 99, 247, 0.35);
 }
 
 .upload-form .uf-submit:active {
-  background: #007f99;
+  background: #0035cc;
 }

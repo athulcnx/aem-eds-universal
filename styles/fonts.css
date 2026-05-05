@@ -1,4 +1,23 @@
 /* stylelint-disable max-line-length */
+
+/* ── Inter (body font) — loaded from Google Fonts in head.html ─────────────── */
+/* Fallback for when Google Fonts is unavailable */
+@font-face {
+  font-family: inter-fallback;
+  size-adjust: 99.529%;
+  src: local('Arial');
+}
+
+/* ── Soleil (heading font) — proprietary ZimVie font ────────────────────────── */
+/* NOTE: soleil.woff2 must be provided by the ZimVie DAM or clientlibs.
+   Until the file is available, Arial Bold serves as the nearest geometric sans fallback. */
+@font-face {
+  font-family: soleil-fallback;
+  size-adjust: 96%;
+  src: local('Arial');
+}
+
+/* ── Legacy Roboto fonts (kept for backwards compatibility) ─────────────────── */
 @font-face {
   font-family: roboto-condensed;
   font-style: normal;

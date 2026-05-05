@@ -204,61 +204,71 @@
         "component": "text",
         "valueType": "string",
         "name": "regionHeading",
-        "label": "Region Section Heading"
+        "label": "Region Section Heading",
+        "value": "1. Select Region / Language"
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "productHeading",
-        "label": "Product Section Heading"
+        "label": "Product Section Heading",
+        "value": "2. Choose Product*"
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "productFootnote",
-        "label": "Product Footnote"
+        "label": "Product Footnote",
+        "value": "*Product clearance and availability may be limited to certain countries/regions."
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "infoHeading",
-        "label": "Contact Info Heading"
+        "label": "Contact Info Heading",
+        "value": "3. Please Fill in the Following Information"
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "uploadHeading",
-        "label": "Upload Section Heading"
+        "label": "Upload Section Heading",
+        "value": "4. Upload DICOM Data"
       },
       {
         "component": "text",
         "valueType": "string",
-        "name": "uploadAccept",
-        "label": "Accepted File Types"
+        "name": "uploadNote",
+        "label": "Upload Note",
+        "value": "* Please note the following information for the data transfer:"
       },
       {
         "component": "text",
         "valueType": "string",
-        "name": "requiredNote",
-        "label": "Required Note"
+        "name": "uploadFormats",
+        "label": "Accepted File Formats",
+        "value": ".pdf, .zip, .rar"
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "submitLabel",
-        "label": "Submit Button Label"
+        "label": "Submit Button Label",
+        "value": "SUBMIT FORM"
       },
       {
         "component": "richtext",
         "valueType": "string",
         "name": "consentTermsLabel",
-        "label": "Terms Checkbox Label"
+        "label": "Terms Checkbox Label",
+        "value": "*I agree"
       },
       {
         "component": "richtext",
         "valueType": "string",
         "name": "consentPrivacyLabel",
-        "label": "Privacy Checkbox Label"
+        "label": "Privacy Checkbox Label",
+        "value": "*I Accept the <a href=\"https://www.zimvie.eu/en/privacy-notice.html\">Privacy Policy</a>"
       },
       {
         "component": "richtext",
