@@ -1,25 +1,30 @@
 /* ═══════════════════════════════════════════════════════════════════
    Upload Form Block — ZimVie CuztomGraft
+   Exact values extracted from https://cuztomgraft.zimvie.com/en-GB
    ═══════════════════════════════════════════════════════════════════ */
 .upload-form {
-  /* ZimVie CuztomGraft design tokens */
+  /* ZimVie CuztomGraft design tokens — extracted from original site */
   --uf-navy: #0b2143;
-  --uf-blue: #1463f7;
+  --uf-blue: #1463f7;                    /* rgb(20, 99, 247) */
   --uf-blue-hover: #0044fc;
-  --uf-cyan: #00acd7;
+  --uf-cyan: #00acd7;                    /* from original brand */
   --uf-cyan-hover: #009dbf;
-  --uf-input-bg: #f7f9fb;
-  --uf-input-h: 48px;
-  --uf-radius: 4px;
-  --uf-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
-  --uf-focus-shadow: inset 0 0 0 2px var(--uf-cyan);
-  --uf-body-text: #272e34;
-  --uf-label-muted: #58585d;
+  /* Input tokens — from .input--default .field__native computed styles */
+  --uf-input-bg: #f7f9fb;               /* rgb(247, 249, 251) */
+  --uf-input-h: 64px;                   /* height: 64px on original */
+  --uf-radius: 8px;                     /* borderRadius: 8px on original */
+  --uf-shadow: rgb(220, 220, 220) 0px 2px 2px -1px inset;  /* original inset shadow */
+  --uf-focus-shadow: rgb(20, 99, 247) 0px 0px 0px 2px inset; /* :focus state */
+  --uf-hover-shadow: rgb(20, 99, 247) 0px 0px 0px 2px inset; /* :hover state */
+  --uf-body-text: #272e34;              /* rgb(39, 46, 52) */
+  --uf-label-muted: #58585d;            /* rgb(88, 88, 93) */
+  --uf-border-color: #d0d5dd;           /* used for borders */
+  --uf-select-color: #1c1137;           /* rgb(28, 17, 55) — original select text */
+  --uf-section-border: #dce3eb;         /* section divider */
 
   font-family: 'Inter', 'Arial', sans-serif;
   font-size: 16px;
   color: var(--uf-body-text);
-  /* Background watermark — pulled from AEM DAM at runtime; no local draft path */
   background-size: 100% auto;
   background-position: top center;
   background-repeat: no-repeat;
@@ -32,13 +37,13 @@
 
 .upload-form > div { margin: 0; }
 
-/* ── Banner strip ─────────────────────────────────────────────────── */
+/* ── Banner strip — 170px to match original tutoplast.jpg banner ── */
 .upload-form .uf-banner {
   width: 100%;
-  height: 260px;
+  height: 170px;              /* original: 170px (background-position: 50% 0%) */
   background-image: url('/drafts/images/banner-bg.jpg');
   background-size: cover;
-  background-position: center 30%;
+  background-position: 50% 0%;   /* original: center 0% */
   background-repeat: no-repeat;
 }
 
@@ -68,35 +73,42 @@
 /* ── Region section ──────────────────────────────────────────────── */
 .upload-form .uf-region-section {
   padding-bottom: 24px;
-  border-bottom: 1px solid #dce3eb;
+  border-bottom: 1px solid var(--uf-section-border);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
    Custom Select Widget
+   Original: .select--default .ss-single-selected
+     bg: rgb(247,249,251), borderRadius: 8px,
+     boxShadow: rgb(220,220,220) 0px 2px 2px -1px inset,
+     color: rgb(28,17,55), height: 64px
+   Hover: bg: #fff, boxShadow: rgb(20,99,247) 0px 0px 0px 2px inset
+   Option even rows: bg: rgb(244,251,255)
+   Option highlighted/hover: bg: rgb(235,247,253)
+   Option selected: bg: rgb(56,113,226), color: #fff
    ═══════════════════════════════════════════════════════════════════ */
 .upload-form .uf-select-wrapper {
   position: relative;
-  height: var(--uf-input-h);
-  border-radius: var(--uf-radius);
-  background: var(--uf-input-bg);
-  border: 1px solid #d0d5dd;
-  box-shadow: var(--uf-shadow);
+  height: var(--uf-input-h);            /* 64px */
+  border-radius: var(--uf-radius);      /* 8px */
+  background: var(--uf-input-bg);       /* #f7f9fb */
+  border: none;
+  box-shadow: var(--uf-shadow);         /* inset shadow like original */
   display: flex;
   flex-direction: row;
   align-items: center;
   box-sizing: border-box;
   max-width: 300px;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: background-color 0.2s, box-shadow 0.25s;
   user-select: none;
+  color: var(--uf-select-color);        /* #1c1137 */
 }
 
-.upload-form .uf-select-wrapper:hover {
-  border-color: var(--uf-cyan);
-}
-
+.upload-form .uf-select-wrapper:hover,
 .upload-form .uf-select-wrapper.open {
-  border-color: var(--uf-blue);
-  box-shadow: 0 0 0 3px rgba(20, 99, 247, 0.15);
+  background-color: #ffffff;
+  box-shadow: var(--uf-hover-shadow);   /* rgb(20,99,247) 0 0 0 2px inset */
+  transition: 0.25s;
 }
 
 .upload-form .uf-select-display {
@@ -104,7 +116,7 @@
   padding: 0 0 0 14px;
   font-size: 16px;
   font-family: 'Inter', sans-serif;
-  color: var(--uf-body-text);
+  color: var(--uf-select-color);        /* #1c1137 */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -129,30 +141,20 @@
   border-radius: 100px;
   box-sizing: border-box;
   background-color: #fff;
+  /* chevron-down icon matching original arrow-down style */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1137' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-position: center;
   background-size: 18px;
   background-repeat: no-repeat;
   cursor: pointer;
-  transition: background-color 0.2s, box-shadow 0.2s, background-image 0.15s;
+  transition: background-color 0.2s, box-shadow 0.2s;
 }
 
-.upload-form .uf-select-arrow:hover {
-  background-color: #f0fbff;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300acd7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  box-shadow: rgb(0 172 215) 0px 0px 0px 2px;
-}
-
+/* Hover arrow: bg: rgb(244,251,255) per original */
+.upload-form .uf-select-wrapper:hover .uf-select-arrow,
 .upload-form .uf-select-wrapper.open .uf-select-arrow {
-  background-color: var(--uf-cyan);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");
-  background-size: 16px;
-  box-shadow: none;
-}
-
-.upload-form .uf-select-wrapper.open .uf-select-arrow:hover {
-  background-color: #009dbf;
-  box-shadow: none;
+  background-color: #f4fbff;            /* rgb(244,251,255) — original hover bg */
+  transition: 0.25s;
 }
 
 .upload-form .uf-select {
@@ -169,15 +171,15 @@
   left: 0;
   width: 100%;
   min-width: 280px;
-  background: #fff;
-  border-radius: var(--uf-radius);
+  background: #ffffff;
+  border-radius: var(--uf-radius);       /* 8px — same as .ss-content */
   box-shadow: rgba(17 17 55 / 0.12) 0px 16px 28px;
   z-index: 100;
   box-sizing: border-box;
   transform-origin: center top;
   transform: scaleY(0);
   opacity: 0;
-  transition: transform 0.18s ease, opacity 0.18s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease;
   pointer-events: none;
 }
 
@@ -191,10 +193,13 @@
   display: flex;
   align-items: center;
   padding: 10px 10px 6px;
-  background: #fff;
+  background: #ffffff;
   border-radius: var(--uf-radius) var(--uf-radius) 0 0;
+  border: 10px solid #ffffff;           /* matches original .ss-content .ss-search */
+  box-sizing: border-box;
 }
 
+/* Search input — matches .select--default .ss-content .ss-search input */
 .upload-form .uf-select-search input {
   display: flex;
   flex: 1 1 auto;
@@ -203,11 +208,12 @@
   border: none;
   border-radius: var(--uf-radius);
   background-color: var(--uf-input-bg);
+  /* search icon — matching original's search.svg background */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23272e34' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
-  background-position: calc(100% - 14px) center;
-  background-size: 18px;
+  background-position: calc(100% - 25px) center;
+  background-size: 20px;
   background-repeat: no-repeat;
-  box-shadow: rgb(220 220 220) 0px 1px 2px 1px inset;
+  box-shadow: var(--uf-shadow);
   font-size: 15px;
   font-family: 'Inter', sans-serif;
   color: var(--uf-body-text);
@@ -228,49 +234,61 @@
   border-radius: 0 0 var(--uf-radius) var(--uf-radius);
 }
 
+/* Option — matches .select--default .ss-option */
 .upload-form .uf-select-option {
-  height: 56px;
+  min-height: 64px;                     /* original: min-height: 64px */
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0.33rem 0.56rem 0.33rem 0.83rem; /* exact original padding */
   font-size: 15px;
   font-family: 'Inter', sans-serif;
-  color: var(--uf-body-text);
+  color: var(--uf-select-color);        /* rgb(28,17,55) */
+  font-weight: 500;
   cursor: pointer;
   transition: background 0.1s;
   box-sizing: border-box;
+  background-color: #ffffff;
 }
 
-.upload-form .uf-select-option:nth-child(even) {
-  background: #f7f9fb;
+/* Alternate rows — original: .select--default .ss-option:nth-of-type(2n+1) = rgb(244,251,255) */
+.upload-form .uf-select-option:nth-child(odd) {
+  background-color: #f4fbff;            /* rgb(244,251,255) */
 }
 
+/* Hover / highlighted — original: rgb(235,247,253) */
 .upload-form .uf-select-option:hover {
-  background: #e8f0fe;
-  color: var(--uf-blue);
+  background-color: #ebf7fd;            /* rgb(235,247,253) */
+  color: var(--uf-select-color);
 }
 
+/* Selected — original: .select--default .ss-option.ss-option-selected
+   bg: rgb(56,113,226), color: #fff */
 .upload-form .uf-select-option.selected {
-  background: var(--uf-blue);
-  color: #fff;
-  font-weight: 600;
+  background-color: #3871e2;            /* rgb(56,113,226) */
+  color: #ffffff;
+  font-weight: 500;
 }
 
 /* ── Products grid ───────────────────────────────────────────────── */
 .upload-form .uf-products-section {
   padding-bottom: 24px;
-  border-bottom: 1px solid #dce3eb;
+  border-bottom: 1px solid var(--uf-section-border);
 }
 
+/* Grid: original flex--row flex--extra-large flex--justify-content-between
+   gap: 48px, justify-content: space-between, flex-wrap: nowrap */
 .upload-form .uf-products-grid {
   display: flex;
   flex-direction: row;
-  gap: 16px;
+  gap: 48px;                            /* original gap: 48px */
+  justify-content: space-between;       /* original: flex--justify-content-between */
+  flex-wrap: nowrap;
   margin-bottom: 12px;
 }
 
 @media (max-width: 768px) {
   .upload-form .uf-products-grid {
+    gap: 16px;
     flex-wrap: wrap;
   }
 
@@ -282,6 +300,7 @@
 @media (max-width: 480px) {
   .upload-form .uf-products-grid {
     flex-direction: column;
+    gap: 16px;
   }
 
   .upload-form .uf-product-tile {
@@ -289,7 +308,9 @@
   }
 }
 
-/* ── Product tile — no card border, radio top + image below ──────── */
+/* ── Product tile — matches .file-upload-form__product-tile ──────────
+   Original: display:flex, flexDirection:column, width:186px,
+   height:156px (radio label above + 106px image below), no border/bg  */
 .upload-form .uf-product-tile {
   flex: 1;
   min-width: 0;
@@ -300,6 +321,7 @@
   border: none;
   padding: 0;
   position: relative;
+  gap: 0;
 }
 
 /* Hidden native radio */
@@ -311,60 +333,79 @@
   pointer-events: none;
 }
 
-/* Radio label row */
+/* Radio label row — original: .field__label with inline-flex, alignItems: center
+   Contains SVG icon + text side by side */
 .upload-form .uf-radio-label {
-  display: flex;
-  align-items: flex-start;
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
   cursor: pointer;
   padding: 0 0 10px;
+  flex-shrink: 0;
 }
 
+/* Radio SVG icon */
 .upload-form .uf-radio-icon {
   flex-shrink: 0;
   width: 20px;
   height: 20px;
-  margin-top: 2px;
 }
 
+/* Outer ring — unselected: grey (#9eaab5) */
 .upload-form .uf-radio-outer {
   stroke: #9eaab5;
   fill: none;
   stroke-width: 1.5;
-  transition: stroke 0.2s;
+  transition: stroke 0.2s, fill 0.2s;
 }
 
+/* Inner dot — transparent until selected */
 .upload-form .uf-radio-inner {
   fill: transparent;
   transition: fill 0.2s;
 }
 
+/* Selected state — matches original radio checked: stroke + fill with brand blue */
 .upload-form .uf-product-tile.selected .uf-radio-outer {
-  stroke: var(--uf-cyan);
+  stroke: var(--uf-blue);               /* #1463f7 — matches .input-radio .field__native:checked */
   fill: none;
 }
 
 .upload-form .uf-product-tile.selected .uf-radio-inner {
-  fill: var(--uf-cyan);
+  fill: var(--uf-blue);                 /* #1463f7 */
 }
 
+.upload-form .uf-product-tile.selected .uf-radio-text {
+  color: var(--uf-blue);
+  font-weight: 600;
+}
+
+/* Hover: show blue ring — matches .input-radio .field__native:hover */
 .upload-form .uf-product-tile:hover .uf-radio-outer {
-  stroke: var(--uf-cyan);
+  stroke: var(--uf-blue);
 }
 
+.upload-form .uf-product-tile:hover .uf-radio-text {
+  color: var(--uf-blue);
+}
+
+/* Radio label text — matches original .field__label:
+   fontSize: 16.02px, fontWeight: 500, color: rgb(0,0,0) */
 .upload-form .uf-radio-text {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--uf-body-text);
   line-height: 1.4;
+  transition: color 0.15s;
 }
 
-/* Product image full width */
+/* Product image — matches original img.image.image--auto (full tile width, 106px h)
+   objectFit: fill, display: block */
 .upload-form .uf-product-img {
   width: 100%;
   height: auto;
   display: block;
-  object-fit: cover;
+  object-fit: fill;
 }
 
 /* ── Product footnote ────────────────────────────────────────────── */
@@ -378,7 +419,7 @@
 /* ── Form fields section ──────────────────────────────────────────── */
 .upload-form .uf-info-section {
   padding-bottom: 24px;
-  border-bottom: 1px solid #dce3eb;
+  border-bottom: 1px solid var(--uf-section-border);
 }
 
 .upload-form .uf-field-row {
@@ -409,15 +450,22 @@
   line-height: 1.3;
 }
 
+/* Form inputs — exact match from .input--default .field__native:
+   bg: rgb(247,249,251), borderRadius: 8px, border: 0px,
+   boxShadow: rgb(220,220,220) 0px 2px 2px -1px inset,
+   height: 64px (minHeight: 3.56rem = ~57px, actual rendered 64px),
+   padding: 0.67rem (~10.7px), fontFamily: inter,
+   fontSize: 1rem, color: rgb(39,46,52), fontWeight: 500 */
 .upload-form .uf-field input,
 .upload-form .uf-field textarea {
-  height: var(--uf-input-h);
-  border: 1px solid #d0d5dd;
-  border-radius: var(--uf-radius);
-  background-color: var(--uf-input-bg);
-  box-shadow: var(--uf-shadow);
+  height: var(--uf-input-h);            /* 64px */
+  border: none;
+  border-radius: var(--uf-radius);      /* 8px */
+  background-color: var(--uf-input-bg); /* #f7f9fb */
+  box-shadow: var(--uf-shadow);         /* inset shadow */
   font-size: 16px;
   font-family: 'Inter', 'Arial', sans-serif;
+  font-weight: 500;
   color: var(--uf-body-text);
   padding: 0 14px;
   box-sizing: border-box;
@@ -425,7 +473,7 @@
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
-  transition: box-shadow 0.15s, border-color 0.15s;
+  transition: box-shadow 0.15s, background-color 0.2s;
 }
 
 .upload-form .uf-field textarea {
@@ -434,15 +482,18 @@
   resize: vertical;
 }
 
+/* Hover — from .input-text:hover:not(.input--disabled) .field__native:
+   boxShadow: rgb(20,99,247) 0px 0px 0px 2px inset */
 .upload-form .uf-field input:hover,
 .upload-form .uf-field textarea:hover {
-  border-color: var(--uf-cyan);
+  box-shadow: var(--uf-hover-shadow);
 }
 
+/* Focus — from .input-text .field__native:focus:not([disabled]):
+   boxShadow: rgb(20,99,247) 0px 0px 0px 2px inset */
 .upload-form .uf-field input:focus,
 .upload-form .uf-field textarea:focus {
-  border-color: var(--uf-blue);
-  box-shadow: 0 0 0 3px rgba(20, 99, 247, 0.15);
+  box-shadow: var(--uf-focus-shadow);
   outline: none;
 }
 
@@ -455,7 +506,7 @@
 /* ── Upload section ──────────────────────────────────────────────── */
 .upload-form .uf-upload-section {
   padding-bottom: 24px;
-  border-bottom: 1px solid #dce3eb;
+  border-bottom: 1px solid var(--uf-section-border);
 }
 
 .upload-form .uf-upload-note {
@@ -488,7 +539,8 @@
   pointer-events: none;
 }
 
-/* "Select files …" CTA button — matches original ZimVie outline button style */
+/* "Select files …" CTA button — matches original ZimVie outline button:
+   border: 1px solid #00acd7, color: #00acd7, bg: transparent, borderRadius: 2px */
 .upload-form .uf-file-cta {
   display: inline-flex;
   align-items: center;
@@ -513,7 +565,7 @@
 
 .upload-form .uf-file-cta:hover {
   background: var(--uf-cyan);
-  color: #fff;
+  color: #ffffff;
 }
 
 /* File list (shown after picking files) */
@@ -528,7 +580,7 @@
   justify-content: space-between;
   align-items: center;
   background: var(--uf-input-bg);
-  border: 1px solid #dce3eb;
+  border: 1px solid var(--uf-section-border);
   border-radius: 6px;
   padding: 8px 12px;
   font-size: 13px;
@@ -620,18 +672,20 @@
   transition: stroke 0.15s;
 }
 
-/* Checked state via JS — will toggle class */
+/* Checked state — matches original .input-checkbox :checked styles:
+   bg: rgb(20,99,247), border: rgb(20,99,247) */
 .upload-form .uf-checkbox-row.checked .uf-checkbox-rect {
-  fill: var(--uf-cyan);
-  stroke: var(--uf-cyan);
+  fill: var(--uf-blue);                 /* #1463f7 */
+  stroke: var(--uf-blue);
 }
 
 .upload-form .uf-checkbox-row.checked .uf-checkbox-check {
-  stroke: #fff;
+  stroke: #ffffff;
 }
 
+/* Hover — matches .input-checkbox .field__native:hover border-color: rgb(20,99,247) */
 .upload-form .uf-checkbox-row:hover .uf-checkbox-rect {
-  stroke: var(--uf-cyan);
+  stroke: var(--uf-blue);
 }
 
 .upload-form .uf-checkbox-row label {
@@ -646,7 +700,9 @@
   color: var(--uf-cyan);
 }
 
-/* ── Submit button — matches original ZimVie (#1463f7 blue, pill, uppercase) */
+/* ── Submit button — matches original ZimVie:
+   bg: #1463f7 (rgb(20,99,247)), borderRadius: 100px (pill),
+   text-transform: uppercase, fontWeight: 700 */
 .upload-form .uf-submit {
   display: inline-flex;
   align-items: center;
@@ -654,7 +710,7 @@
   height: 52px;
   padding: 0 48px;
   background: var(--uf-blue);
-  color: #fff;
+  color: #ffffff;
   border: none;
   border-radius: 100px;
   font-family: 'Inter', 'Arial', sans-serif;

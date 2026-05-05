@@ -151,13 +151,14 @@ function buildCustomSelect(options, name) {
 /**
  * Product radio-tile matching original ZimVie layout:
  * radio label on top, product image below, click anywhere selects.
- * @param {HTMLImageElement|null} imgEl
+ * @param {HTMLImageElement|HTMLPictureElement|null} imgEl  img or picture element
  * @param {string} altText
  * @param {string} labelText
  * @param {string} value
  * @param {string} radioName
+ * @param {string} [imgSrcFallback]  fallback src if local draft path 404s
  */
-function buildProductTile(imgEl, altText, labelText, value, radioName) {
+function buildProductTile(imgEl, altText, labelText, value, radioName, imgSrcFallback) {
   const tile = document.createElement('div');
   tile.className = 'uf-product-tile';
 
@@ -195,22 +196,43 @@ function buildProductTile(imgEl, altText, labelText, value, radioName) {
   iconSvg.appendChild(outerCircle);
   iconSvg.appendChild(innerCircle);
 
-  const labelText2 = document.createElement('span');
-  labelText2.className = 'uf-radio-text';
-  labelText2.textContent = labelText;
+  const labelSpan = document.createElement('span');
+  labelSpan.className = 'uf-radio-text';
+  labelSpan.textContent = labelText;
 
   labelEl.appendChild(radio);
   labelEl.appendChild(iconSvg);
-  labelEl.appendChild(labelText2);
+  labelEl.appendChild(labelSpan);
   tile.appendChild(labelEl);
 
   // Product image (below radio row)
+  // Handles: bare <img>, <picture> with nested <img>, or null
   if (imgEl) {
-    const img = imgEl.cloneNode(true);
-    img.alt = altText || labelText;
-    img.loading = 'lazy';
-    img.className = 'uf-product-img';
-    tile.appendChild(img);
+    let imageNode;
+    if (imgEl.tagName === 'PICTURE') {
+      // Clone the full <picture> element including <source> and <img> children
+      imageNode = imgEl.cloneNode(true);
+      const innerImg = imageNode.querySelector('img');
+      if (innerImg) {
+        innerImg.alt = altText || labelText;
+        innerImg.loading = 'lazy';
+        innerImg.className = 'uf-product-img';
+        // Fallback src if local draft image 404s
+        if (imgSrcFallback) {
+          innerImg.addEventListener('error', () => { innerImg.src = imgSrcFallback; }, { once: true });
+        }
+      }
+    } else {
+      // Bare <img> element
+      imageNode = imgEl.cloneNode(true);
+      imageNode.alt = altText || labelText;
+      imageNode.loading = 'lazy';
+      imageNode.className = 'uf-product-img';
+      if (imgSrcFallback) {
+        imageNode.addEventListener('error', () => { imageNode.src = imgSrcFallback; }, { once: true });
+      }
+    }
+    tile.appendChild(imageNode);
   }
 
   // Click anywhere on tile selects the radio
@@ -327,22 +349,27 @@ const DEFAULT_PRODUCTS = [
   {
     label: 'Puros\u00ae Allograft Customized Block',
     value: 'puros_allograft_customzied_block',
-    imgSrc: 'https://cuztomgraft.zimvie.com/content/zimvie-cuztomgraft/en-GB/_jcr_content/root/container/cuztomgraft_app/_content/region/file-upload-form/field-opt_article/tier-1/product-tile/image.coreimg.jpeg/1660744695684/puros-allograft-customized-block.jpeg',
+    // Use drafts/ local paths as primary; fall back to live site if hosted
+    imgSrc: '/drafts/images/puros-allograft.jpeg',
+    imgSrcFallback: 'https://cuztomgraft.zimvie.com/content/zimvie-cuztomgraft/en-GB/_jcr_content/root/container/cuztomgraft_app/_content/region/file-upload-form/field-opt_article/tier-1/product-tile/image.coreimg.jpeg/1660744695684/puros-allograft-customized-block.jpeg',
   },
   {
     label: 'PEEK AccuraPlate\u2122',
     value: 'peek_accuraplate',
-    imgSrc: 'https://cuztomgraft.zimvie.com/content/zimvie-cuztomgraft/en-GB/_jcr_content/root/container/cuztomgraft_app/_content/region/file-upload-form/field-opt_article/tier-1/product-tile-1/image.coreimg.jpeg/1660744732893/peek-accuraplate.jpeg',
+    imgSrc: '/drafts/images/peek-accuraplate.jpeg',
+    imgSrcFallback: 'https://cuztomgraft.zimvie.com/content/zimvie-cuztomgraft/en-GB/_jcr_content/root/container/cuztomgraft_app/_content/region/file-upload-form/field-opt_article/tier-1/product-tile-1/image.coreimg.jpeg/1660744732893/peek-accuraplate.jpeg',
   },
   {
     label: 'Titanium AccuraMesh\u2122',
     value: 'titanium_accuramesh',
-    imgSrc: 'https://cuztomgraft.zimvie.com/content/zimvie-cuztomgraft/en-GB/_jcr_content/root/container/cuztomgraft_app/_content/region/file-upload-form/field-opt_article/tier-1/product-tile-2/image.coreimg.jpeg/1660744756285/titanium-accuramesh.jpeg',
+    imgSrc: '/drafts/images/titanium-accuramesh.jpeg',
+    imgSrcFallback: 'https://cuztomgraft.zimvie.com/content/zimvie-cuztomgraft/en-GB/_jcr_content/root/container/cuztomgraft_app/_content/region/file-upload-form/field-opt_article/tier-1/product-tile-2/image.coreimg.jpeg/1660744756285/titanium-accuramesh.jpeg',
   },
   {
     label: 'PEEK AccuraMesh\u2122',
     value: 'peek_accuramesh',
-    imgSrc: 'https://cuztomgraft.zimvie.com/content/zimvie-cuztomgraft/en-GB/_jcr_content/root/container/cuztomgraft_app/_content/region/file-upload-form/field-opt_article/tier-1/product-tile-3/image.coreimg.jpeg/1660744779050/peek-accuramesh.jpeg',
+    imgSrc: '/drafts/images/peek-accuramesh.jpeg',
+    imgSrcFallback: 'https://cuztomgraft.zimvie.com/content/zimvie-cuztomgraft/en-GB/_jcr_content/root/container/cuztomgraft_app/_content/region/file-upload-form/field-opt_article/tier-1/product-tile-3/image.coreimg.jpeg/1660744779050/peek-accuramesh.jpeg',
   },
 ];
 
@@ -397,14 +424,22 @@ function buildProductsSection(heading, products, footnote) {
   const grid = document.createElement('div');
   grid.className = 'uf-products-grid';
   products.forEach((p) => {
-    // Support both authored child-item rows (p.imgEl) and default fallback (p.imgSrc)
-    let imgEl = p.imgEl || null;
+    // Support both authored child-item rows (p.imgEl / p.picEl) and default fallback (p.imgSrc)
+    // p.imgEl may be a bare <img> OR a <picture> element (when cloned from UE-authored data)
+    let imgEl = p.picEl || p.imgEl || null;
     if (!imgEl && p.imgSrc) {
       imgEl = document.createElement('img');
       imgEl.src = p.imgSrc;
-      imgEl.alt = p.label;
+      imgEl.alt = p.imgAlt || p.label;
     }
-    grid.appendChild(buildProductTile(imgEl, p.imgAlt || p.label, p.label, p.value, 'opt_article'));
+    grid.appendChild(buildProductTile(
+      imgEl,
+      p.imgAlt || p.label,
+      p.label,
+      p.value,
+      'opt_article',
+      p.imgSrcFallback || null,
+    ));
   });
   section.appendChild(grid);
 
@@ -552,11 +587,19 @@ function parseRegionOptionRow(row) {
 
 /**
  * Parse a product-tile child item row (UE model).
- * Cells: [0] productImage(<img>)  [1] productImageAlt  [2] productLabel  [3] productValue
+ * Cells: [0] productImage(<picture>/<img>)  [1] productImageAlt  [2] productLabel  [3] productValue
+ *
+ * In UE JCR mode, cell[0] may contain a <picture> element wrapping the DAM image ref.
+ * We capture the full <picture> element as picEl for proper srcset/responsive rendering,
+ * plus the bare <img> as imgEl for alt text extraction.
  */
 function parseProductTileRow(row) {
+  const cell0 = row?.children?.[0];
+  const picEl = cell0 ? cell0.querySelector('picture') : null;
+  const imgEl = cell0 ? cell0.querySelector('img') : null;
   return {
-    imgEl: cellImg(row, 0),
+    picEl,               // full <picture> element (preferred — preserves srcset)
+    imgEl,               // bare <img> fallback
     imgAlt: cellText(row, 1),
     label: cellText(row, 2),
     value: cellText(row, 3) || cellText(row, 2).toLowerCase().replace(/[^a-z0-9]+/g, '_'),
@@ -579,9 +622,10 @@ function parseFormFieldRow(row) {
 
 /**
  * Identify what kind of child item a row is.
- * Checks data-aue-model first (UE author tier), then falls back to cell count.
+ * Checks data-aue-model first (UE author tier), then falls back to cell count + content.
  * region-option: 3 cells
- * product-tile:  4 cells (first cell contains <img>)
+ * product-tile:  4 cells — [image/picture] [altText] [label] [value]
+ *                         (first cell has an <img> or <picture>)
  * form-field:    5 cells  OR 2 cells with pipe-delimited text
  */
 function classifyChildRow(row) {
@@ -593,8 +637,9 @@ function classifyChildRow(row) {
   const count = row.children.length;
   if (count === 3) return 'region-option';
   if (count === 4) {
-    // 4-cell row: product-tile if first cell has an image, else something else
-    return 'product-tile';
+    // 4-cell row: product-tile if first cell has an image or picture element
+    const firstCellHasMedia = !!(row.children[0]?.querySelector('img, picture'));
+    return firstCellHasMedia ? 'product-tile' : null;
   }
   if (count === 5) return 'form-field';
   return null;
@@ -760,11 +805,15 @@ function parseLegacyFormat(rows) {
           const t = p.textContent.trim();
           const html = p.innerHTML.trim();
           if (/^checkbox\|statement\|/i.test(t)) {
-            // "*I agree"
-            data.termsHtml = t.replace(/^checkbox\|statement\|/i, '').replace(/\|required$/i, '').trim();
+            // "*I agree" — use plain text since it has no HTML
+            data.termsHtml = t.replace(/^checkbox\|statement\|/i, '').replace(/\|required\s*$/i, '').trim();
           } else if (/^checkbox\|policy\|/i.test(t)) {
-            // "*I Accept the Privacy Policy"
-            data.privacyHtml = html.replace(/^checkbox\|policy\|/i, '').replace(/\|required$/i, '').trim();
+            // "*I Accept the <a href="...">Privacy Policy</a>" — strip prefix/suffix from innerHTML
+            // html example: "checkbox|policy|*I Accept the <a href='...'>Privacy Policy</a>|required"
+            data.privacyHtml = html
+              .replace(/^checkbox\|policy\|/i, '')
+              .replace(/\|required\s*$/i, '')
+              .trim();
           } else if (/^submit\|/i.test(t)) {
             data.submitLabel = t.replace(/^submit\|/i, '').trim();
           } else {
@@ -791,19 +840,20 @@ function parseLegacyFormat(rows) {
     // ── Multi-cell rows ───────────────────────────────────────────────────
     if (cellCount >= 2) {
       // Products section: alternating image|label pairs in a multi-cell row
+      // Legacy format: cell0=picture/img, cell1=label text, cell2=picture/img, cell3=label...
       if (currentSection === 'products') {
-        // Scan cells: odd cells may be images, even cells may be labels
-        // Pattern from draft HTML: cell0=img, cell1=label, cell2=img, cell3=label...
         for (let i = 0; i < cellCount; i += 2) {
           const imgCell = row.children[i];
           const labelCell = row.children[i + 1];
-          const img = imgCell?.querySelector('img');
+          const picEl = imgCell?.querySelector('picture') || null;
+          const img = imgCell?.querySelector('img') || null;
           const labelText = labelCell?.textContent?.trim() || '';
-          if (img || labelText) {
+          if (picEl || img || labelText) {
             data.products.push({
-              imgEl: img || null,
+              picEl,                           // full <picture> for responsive images
+              imgEl: img || null,              // bare <img> fallback
               imgAlt: img?.alt || labelText,
-              label: labelText || (img?.alt || ''),
+              label: labelText || img?.alt || '',
               value: (labelText || img?.alt || '').toLowerCase().replace(/[^a-z0-9]+/g, '_'),
             });
           }
