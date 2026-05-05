@@ -1,52 +1,67 @@
 /**
- * Upload Form Block â fully authorable via Universal Editor.
+ * Upload Form Block — Universal Editor (UE) authorable via AEM.
  *
- * Content format (row-based, pipe-delimited fields within cells):
+ * AEM franklin delivery renders each JCR property on the block node as a
+ * positional <div><div>VALUE</div></div> row inside the block element.
+ * Child block items (region-option, product-tile, form-field) each render
+ * as one additional row appended after the block-level property rows, with
+ * each item property as a separate cell inside that row.
  *
- * Row 0  : banner image row â 1 cell containing a <picture><img>
- * Row 1  : region heading + options â cell[0] has h3 + <p> with pipe-separated
- *           "Label (LANG)" values
- * Row 2  : product section heading â cell[0] has h3
- * Row 3  : product tiles â alternating cells: even = <picture>, odd = label text
- * Row 4  : product footnote â cell[0] has <em> text
- * Row 5  : info heading â cell[0] has h3
- * Rows 6â10: form field rows â each cell contains text in the format
- *           "Label|type|name[|required]"
- * Row 11 : required-fields note â cell[0] has <em>* Required fields</em>
- * Row 12 : upload section â cell[0] has h3 + description paragraphs +
- *           a line "file-upload|files[]|.pdf,.zip,.rar"
- * Row 13 : consent/submit section â cell[0] has:
- *           - <p><strong>intro text</strong></p>
- *           - optional T&C link paragraphs
- *           - disclaimer paragraph
- *           - "checkbox|name|Label[|required]" lines
- *           - "submit|Button Label" line
- * Row 14 : legal disclaimer â cell[0] has optional h3 + <em> disclaimer text
+ * Block-level property row order (matches component-models.json):
+ *  Row 0  → bannerImage    (reference → <img> element in cell)
+ *  Row 1  → bannerAlt      (string)
+ *  Row 2  → regionHeading  (string)
+ *  Row 3  → productHeading (string)
+ *  Row 4  → productFootnote(string)
+ *  Row 5  → infoHeading    (string)
+ *  Row 6  → uploadHeading  (string)
+ *  Row 7  → uploadNote     (string — "* Please note …")
+ *  Row 8  → uploadFormats  (string — "Accepted file formats: …")
+ *  Row 9  → submitLabel    (string)
+ *  Row 10 → consentTermsLabel   (richtext → innerHTML)
+ *  Row 11 → consentPrivacyLabel (richtext → innerHTML)
+ *  Row 12 → disclaimerText      (richtext → innerHTML)
+ *
+ * Child item rows (appended after row 12):
+ *  region-option  → 3 cells: label | value | isDefault("true"/"false")
+ *  product-tile   → 4 cells: productImage(<img>) | productImageAlt | productLabel | productValue
+ *  form-field     → 5 cells: fieldLabel | fieldType | fieldName | fieldRequired | fieldRow
  */
 
-// ââ Cell helpers âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-/** Returns trimmed text content of the nth child cell of a row div. */
-function cellText(row, idx) {
+/** Number of block-level property rows before child item rows start. */
+const BLOCK_PROP_ROWS = 13;
+
+// ─── Row/cell helpers ─────────────────────────────────────────────────────────
+
+/** Trimmed text of cell[idx] within a row div. */
+function cellText(row, idx = 0) {
   const cell = row?.children?.[idx];
   return cell ? cell.textContent.trim() : '';
 }
 
-/** Returns the first <img> element found in the nth child cell of a row div. */
-function cellImg(row, idx) {
+/** innerHTML of cell[idx] (for richtext fields). */
+function cellHtml(row, idx = 0) {
+  const cell = row?.children?.[idx];
+  return cell ? cell.innerHTML.trim() : '';
+}
+
+/** First <img> inside cell[idx]. */
+function cellImg(row, idx = 0) {
   const cell = row?.children?.[idx];
   return cell ? cell.querySelector('img') : null;
 }
 
-// ââ Widget builders âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── Widget builders ──────────────────────────────────────────────────────────
 
 /**
- * Build a custom animated select dropdown.
- * @param {Array<{label:string, value:string, isDefault:boolean}>} options
- * @param {string} name  â native select name attribute
+ * Custom animated select with search dropdown.
+ * @param {Array<{label:string,value:string,isDefault:boolean}>} options
+ * @param {string} name
  */
 function buildCustomSelect(options, name) {
-  const defaultOpt = options.find((o) => o.isDefault) || options[0];
+  const defaultOpt = options.find((o) => o.isDefault) || options[0] || { label: '', value: '' };
 
   const wrapper = document.createElement('div');
   wrapper.className = 'uf-select-wrapper';
@@ -58,13 +73,13 @@ function buildCustomSelect(options, name) {
     const o = document.createElement('option');
     o.value = opt.value || opt.label;
     o.textContent = opt.label;
-    if (opt.isDefault || opt === defaultOpt) o.selected = true;
+    if (opt === defaultOpt || opt.isDefault) o.selected = true;
     native.appendChild(o);
   });
 
   const display = document.createElement('span');
   display.className = 'uf-select-display';
-  display.textContent = defaultOpt ? defaultOpt.label : '';
+  display.textContent = defaultOpt.label;
 
   const arrowWrap = document.createElement('span');
   arrowWrap.className = 'uf-select-arrow-wrap';
@@ -110,7 +125,6 @@ function buildCustomSelect(options, name) {
         list.appendChild(item);
       });
   };
-
   buildOptions();
   dropdown.appendChild(list);
 
@@ -135,7 +149,7 @@ function buildCustomSelect(options, name) {
 }
 
 /**
- * Build a product selection tile with a custom radio button.
+ * Product radio-tile.
  * @param {HTMLImageElement|null} imgEl
  * @param {string} altText
  * @param {string} labelText
@@ -177,20 +191,13 @@ function buildProductTile(imgEl, altText, labelText, value, radioName) {
   radioField.appendChild(radio);
   radioField.appendChild(radioRow);
 
-  // Wire the tile click to check the radio
   tile.addEventListener('click', () => {
     radio.checked = true;
     radio.dispatchEvent(new Event('change', { bubbles: true }));
-    tile.closest('.uf-products-grid')
-      ?.querySelectorAll('.uf-product-tile')
-      .forEach((t) => t.classList.remove('selected'));
-    tile.classList.add('selected');
   });
   radio.addEventListener('change', () => {
     if (radio.checked) {
-      tile.closest('.uf-products-grid')
-        ?.querySelectorAll('.uf-product-tile')
-        .forEach((t) => t.classList.remove('selected'));
+      tile.closest('.uf-products-grid')?.querySelectorAll('.uf-product-tile').forEach((t) => t.classList.remove('selected'));
       tile.classList.add('selected');
     }
   });
@@ -207,9 +214,7 @@ function buildProductTile(imgEl, altText, labelText, value, radioName) {
   return tile;
 }
 
-/**
- * Build a labelled input / textarea field.
- */
+/** Labelled input / textarea field. */
 function buildField(labelText, type, name, required) {
   const fieldDiv = document.createElement('div');
   fieldDiv.className = 'uf-field';
@@ -233,9 +238,7 @@ function buildField(labelText, type, name, required) {
   return fieldDiv;
 }
 
-/**
- * Build a checkbox row.
- */
+/** Checkbox row. */
 function buildCheckbox(name, labelHtml, required) {
   const wrap = document.createElement('div');
   wrap.className = 'uf-checkbox-row';
@@ -255,32 +258,32 @@ function buildCheckbox(name, labelHtml, required) {
   return wrap;
 }
 
-// ââ Default fallback data âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── Default fallback data ────────────────────────────────────────────────────
 
 const DEFAULT_REGION_OPTIONS = [
   { label: 'UK/Ireland (EN)', value: 'uk-ie-en', isDefault: true },
-  { label: 'Austria (DE)', value: 'at-de', isDefault: false },
-  { label: 'Belgium (FR)', value: 'be-fr', isDefault: false },
-  { label: 'Belgium (NL)', value: 'be-nl', isDefault: false },
-  { label: 'France (FR)', value: 'fr-fr', isDefault: false },
-  { label: 'Germany (DE)', value: 'de-de', isDefault: false },
-  { label: 'Italy (IT)', value: 'it-it', isDefault: false },
-  { label: 'Netherlands (EN)', value: 'nl-en', isDefault: false },
-  { label: 'Netherlands (NL)', value: 'nl-nl', isDefault: false },
-  { label: 'Other Markets (EN)', value: 'other-en', isDefault: false },
-  { label: 'Portugal (PT)', value: 'pt-pt', isDefault: false },
-  { label: 'Spain (ES)', value: 'es-es', isDefault: false },
-  { label: 'Switzerland (DE)', value: 'ch-de', isDefault: false },
-  { label: 'Switzerland (FR)', value: 'ch-fr', isDefault: false },
-  { label: 'Switzerland (IT)', value: 'ch-it', isDefault: false },
-  { label: 'Israel (IL)', value: 'il', isDefault: false },
+  { label: 'Austria (DE)', value: 'at-de' },
+  { label: 'Belgium (FR)', value: 'be-fr' },
+  { label: 'Belgium (NL)', value: 'be-nl' },
+  { label: 'France (FR)', value: 'fr-fr' },
+  { label: 'Germany (DE)', value: 'de-de' },
+  { label: 'Italy (IT)', value: 'it-it' },
+  { label: 'Netherlands (EN)', value: 'nl-en' },
+  { label: 'Netherlands (NL)', value: 'nl-nl' },
+  { label: 'Other Markets (EN)', value: 'other-en' },
+  { label: 'Portugal (PT)', value: 'pt-pt' },
+  { label: 'Spain (ES)', value: 'es-es' },
+  { label: 'Switzerland (DE)', value: 'ch-de' },
+  { label: 'Switzerland (FR)', value: 'ch-fr' },
+  { label: 'Switzerland (IT)', value: 'ch-it' },
+  { label: 'Israel (IL)', value: 'il' },
 ];
 
 const DEFAULT_PRODUCTS = [
-  { label: 'PurosÂ® Allograft Customized Block', value: 'puros_allograft_customzied_block', imgSrc: '/drafts/images/puros-allograft.jpeg' },
-  { label: 'PEEK AccuraPlateâ¢', value: 'peek_accuraplate', imgSrc: '/drafts/images/peek-accuraplate.jpeg' },
-  { label: 'Titanium AccuraMeshâ¢', value: 'titanium_accuramesh', imgSrc: '/drafts/images/titanium-accuramesh.jpeg' },
-  { label: 'PEEK AccuraMeshâ¢', value: 'peek_accuramesh', imgSrc: '/drafts/images/peek-accuramesh.jpeg' },
+  { label: 'Puros® Allograft Customized Block', value: 'puros_allograft_customzied_block', imgSrc: '' },
+  { label: 'PEEK AccuraPlate™', value: 'peek_accuraplate', imgSrc: '' },
+  { label: 'Titanium AccuraMesh™', value: 'titanium_accuramesh', imgSrc: '' },
+  { label: 'PEEK AccuraMesh™', value: 'peek_accuramesh', imgSrc: '' },
 ];
 
 const DEFAULT_FIELDS = [
@@ -289,221 +292,81 @@ const DEFAULT_FIELDS = [
   { label: 'Customer Name *', type: 'text', name: 'contact', required: true, row: 2 },
   { label: 'Defect Site *', type: 'text', name: 'region', required: true, row: 2 },
   { label: 'E-Mail *', type: 'email', name: 'email', required: true, row: 3 },
-  { label: 'Number of planned Implants; Ã and length (mm) *', type: 'text', name: 'implant_size', required: true, row: 3 },
+  { label: 'Number of planned Implants; Ø and length (mm) *', type: 'text', name: 'implant_size', required: true, row: 3 },
   { label: 'Address *', type: 'text', name: 'street', required: true, row: 4 },
   { label: 'Comments', type: 'textarea', name: 'comments', required: false, row: 4 },
   { label: 'Phone Number *', type: 'tel', name: 'phone', required: true, row: 5 },
 ];
 
-// ââ Row classification helpers ââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── Section builders ─────────────────────────────────────────────────────────
 
-/**
- * Detect if a row is the "banner" row (single cell with a picture/img).
- */
-function isBannerRow(row) {
-  return row.children.length === 1 && !!row.children[0].querySelector('picture, img');
-}
-
-/**
- * Detect if a row contains an h3 heading.
- */
-function hasHeading(row) {
-  return !!row.querySelector('h3');
-}
-
-/**
- * Detect if a cell text matches field format: "Label|type|name[|required]"
- */
-function isFieldSpec(text) {
-  return /^[^|]+\|(text|email|tel|textarea)\|[a-z_[\]]+/.test(text.trim());
-}
-
-/**
- * Parse field spec: "Label|type|name[|required]"
- */
-function parseFieldSpec(text) {
-  const parts = text.trim().split('|');
-  return {
-    label: parts[0].trim(),
-    type: parts[1]?.trim() || 'text',
-    name: parts[2]?.trim() || '',
-    required: parts[3]?.trim() === 'required',
-  };
-}
-
-/**
- * Detect if a row is a product tiles row (alternating picture + text cells, even number >= 4).
- */
-function isProductTilesRow(row) {
-  if (row.children.length < 2) return false;
-  // Check if cells alternate between having images and text
-  const cells = [...row.children];
-  const evenHaveImages = cells.filter((_, i) => i % 2 === 0).some((c) => c.querySelector('picture, img'));
-  return evenHaveImages && cells.length >= 4;
-}
-
-/**
- * Detect if a row contains form field definitions (pipe-separated text in cells).
- */
-function isFormFieldsRow(row) {
-  const cells = [...row.children];
-  return cells.some((cell) => {
-    const text = cell.textContent.trim();
-    return isFieldSpec(text);
-  });
-}
-
-/**
- * Detect if a row is the upload section (has h3 "Upload" or contains "file-upload" text).
- */
-function isUploadRow(row) {
-  const text = row.textContent;
-  return text.includes('file-upload') || (hasHeading(row) && text.toLowerCase().includes('upload'));
-}
-
-/**
- * Detect if a row is the consent/checkboxes/submit section.
- */
-function isConsentRow(row) {
-  const text = row.textContent;
-  return text.includes('checkbox|') || text.includes('submit|');
-}
-
-// ââ Section builders ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-
-function buildBannerSection(row) {
+function buildBannerSection(imgEl, alt) {
   const section = document.createElement('div');
   section.className = 'uf-banner';
-  const img = row.querySelector('img');
-  if (img) {
-    section.style.backgroundImage = `url('${img.src}')`;
+  if (imgEl) {
+    section.style.backgroundImage = `url('${imgEl.src}')`;
+    section.setAttribute('aria-label', alt || '');
   }
   return section;
 }
 
-function buildRegionSection(row, regionHeading) {
+function buildRegionSection(heading, regionOptions) {
   const section = document.createElement('div');
   section.className = 'uf-section uf-region-section';
 
   const h3 = document.createElement('h3');
-  h3.textContent = regionHeading || '1. Select Region / Language';
+  h3.textContent = heading || '1. Select Region / Language';
   section.appendChild(h3);
 
-  // Parse region options from pipe-separated paragraph text
-  let options = [...DEFAULT_REGION_OPTIONS];
-  const p = row.querySelector('p');
-  if (p) {
-    const rawText = p.textContent.trim();
-    if (rawText.includes('|')) {
-      options = rawText.split('|').map((label, idx) => ({
-        label: label.trim(),
-        value: label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        isDefault: idx === 0,
-      }));
-    }
-  }
-
-  section.appendChild(buildCustomSelect(options, 'lang_switch'));
+  section.appendChild(buildCustomSelect(regionOptions, 'lang_switch'));
   return section;
 }
 
-function buildProductsSection(headingRow, tilesRow, footnoteRow, productHeading) {
+function buildProductsSection(heading, products, footnote) {
   const section = document.createElement('div');
   section.className = 'uf-section uf-products-section';
 
   const h3 = document.createElement('h3');
-  h3.textContent = productHeading || '2. Choose Product*';
+  h3.textContent = heading || '2. Choose Product*';
   section.appendChild(h3);
 
   const grid = document.createElement('div');
   grid.className = 'uf-products-grid';
-
-  if (tilesRow) {
-    const cells = [...tilesRow.children];
-    for (let i = 0; i + 1 < cells.length; i += 2) {
-      const imgCell = cells[i];
-      const labelCell = cells[i + 1];
-      const imgEl = imgCell.querySelector('img');
-      const altText = imgEl?.alt || '';
-      const labelText = labelCell.textContent.trim();
-      // Derive a form value from the label
-      const productValues = {
-        'PurosÂ® Allograft Customized Block': 'puros_allograft_customzied_block',
-        'PEEK AccuraPlateâ¢': 'peek_accuraplate',
-        'PEEK AccuraMeshâ¢': 'peek_accuramesh',
-        'Titanium AccuraMeshâ¢': 'titanium_accuramesh',
-      };
-      const value = productValues[labelText] || labelText.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-      grid.appendChild(buildProductTile(imgEl, altText, labelText, value, 'product'));
-    }
-  } else {
-    // Fallback: use default products (no images)
-    DEFAULT_PRODUCTS.forEach((p) => {
-      grid.appendChild(buildProductTile(null, '', p.label, p.value, 'product'));
-    });
-  }
-
+  products.forEach((p) => grid.appendChild(buildProductTile(p.imgEl || null, p.imgAlt || '', p.label, p.value, 'product')));
   section.appendChild(grid);
 
-  if (footnoteRow) {
-    const fnDiv = document.createElement('div');
-    fnDiv.className = 'uf-product-footnote';
-    fnDiv.innerHTML = footnoteRow.querySelector('div')?.innerHTML || '';
-    section.appendChild(fnDiv);
+  if (footnote) {
+    const fn = document.createElement('p');
+    fn.className = 'uf-product-footnote';
+    fn.textContent = footnote;
+    section.appendChild(fn);
   }
 
   return section;
 }
 
-function buildInfoSection(fieldRows, infoHeading) {
+function buildInfoSection(heading, fields) {
   const section = document.createElement('div');
   section.className = 'uf-section uf-info-section';
 
   const h3 = document.createElement('h3');
-  h3.textContent = infoHeading || '3. Please Fill in the Following Information';
+  h3.textContent = heading || '3. Please Fill in the Following Information';
   section.appendChild(h3);
 
-  if (fieldRows.length > 0) {
-    // Parse fields from the rows
-    // Each row can have 1 or 2 cells, each cell has "Label|type|name[|required]"
-    fieldRows.forEach((row) => {
-      const cells = [...row.children];
-      const validCells = cells.filter((c) => isFieldSpec(c.textContent.trim()));
+  // Group fields by row number
+  const grouped = {};
+  fields.forEach((f) => {
+    const r = f.row || 1;
+    if (!grouped[r]) grouped[r] = [];
+    grouped[r].push(f);
+  });
 
-      if (validCells.length === 0) return; // skip non-field rows (like required note)
-
-      if (validCells.length > 1) {
-        // Two-column row
-        const rowDiv = document.createElement('div');
-        rowDiv.className = 'uf-field-row uf-field-row-2col';
-        validCells.forEach((cell) => {
-          const spec = parseFieldSpec(cell.textContent.trim());
-          rowDiv.appendChild(buildField(spec.label, spec.type, spec.name, spec.required));
-        });
-        section.appendChild(rowDiv);
-      } else {
-        // Single field row
-        const spec = parseFieldSpec(validCells[0].textContent.trim());
-        const rowDiv = document.createElement('div');
-        rowDiv.className = 'uf-field-row uf-field-row-1col';
-        rowDiv.appendChild(buildField(spec.label, spec.type, spec.name, spec.required));
-        section.appendChild(rowDiv);
-      }
-    });
-  } else {
-    // Fallback defaults â group fields by row number
-    const grouped = {};
-    DEFAULT_FIELDS.forEach((f) => {
-      if (!grouped[f.row]) grouped[f.row] = [];
-      grouped[f.row].push(f);
-    });
-    Object.values(grouped).forEach((rowFields) => {
-      const rowDiv = document.createElement('div');
-      rowDiv.className = `uf-field-row uf-field-row-${rowFields.length > 1 ? '2col' : '1col'}`;
-      rowFields.forEach((f) => rowDiv.appendChild(buildField(f.label, f.type, f.name, f.required)));
-      section.appendChild(rowDiv);
-    });
-  }
+  Object.values(grouped).forEach((rowFields) => {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = `uf-field-row uf-field-row-${rowFields.length > 1 ? '2col' : '1col'}`;
+    rowFields.forEach((f) => rowDiv.appendChild(buildField(f.label, f.type, f.name, f.required)));
+    section.appendChild(rowDiv);
+  });
 
   const note = document.createElement('p');
   note.className = 'uf-required-note';
@@ -513,62 +376,36 @@ function buildInfoSection(fieldRows, infoHeading) {
   return section;
 }
 
-function buildUploadSection(row, uploadHeading) {
+function buildUploadSection(heading, note, formats) {
   const section = document.createElement('div');
   section.className = 'uf-section uf-upload-section';
 
   const h3 = document.createElement('h3');
-  h3.textContent = uploadHeading || '4. Upload DICOM Data';
+  h3.textContent = heading || '4. Upload DICOM Data';
   section.appendChild(h3);
 
-  // Parse upload details from the row
-  let accept = '.pdf,.zip,.rar';
-  let fileInputName = 'files[]';
-  let descriptionHtml = '';
+  const desc = document.createElement('div');
+  desc.className = 'uf-upload-desc';
 
-  if (row) {
-    const cell = row.children[0];
-    const lines = cell ? [...cell.childNodes].filter((n) => n.nodeType === 1) : [];
-    const descParts = [];
+  const notePara = document.createElement('p');
+  notePara.textContent = note || '* Please note the following information for the data transfer:';
+  desc.appendChild(notePara);
 
-    lines.forEach((el) => {
-      const text = el.textContent.trim();
-      if (text.startsWith('file-upload|')) {
-        const parts = text.split('|');
-        fileInputName = parts[1]?.trim() || fileInputName;
-        accept = parts[2]?.trim() || accept;
-      } else if (el.tagName === 'H3') {
-        // skip - we already added the heading
-      } else {
-        descParts.push(el.outerHTML);
-      }
-    });
-
-    descriptionHtml = descParts.join('');
+  if (formats) {
+    const fmtPara = document.createElement('p');
+    fmtPara.innerHTML = `<strong>${formats}</strong>`;
+    desc.appendChild(fmtPara);
   }
 
-  if (descriptionHtml) {
-    const desc = document.createElement('div');
-    desc.className = 'uf-upload-desc';
-    desc.innerHTML = descriptionHtml;
-    section.appendChild(desc);
-  } else {
-    const note = document.createElement('p');
-    note.className = 'uf-upload-note';
-    note.textContent = '* Please note the following information for the data transfer:';
-    section.appendChild(note);
+  section.appendChild(desc);
 
-    const formats = document.createElement('p');
-    formats.innerHTML = '<strong>Accepted file formats:</strong> <strong>.pdf, .zip, .rar</strong>';
-    section.appendChild(formats);
-  }
-
+  const accept = '.dcm,.zip,.rar';
   const fileWrap = document.createElement('div');
   fileWrap.className = 'uf-file-drop-zone';
 
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
-  fileInput.name = fileInputName;
+  fileInput.name = 'files[]';
   fileInput.id = 'uf-file-input';
   fileInput.accept = accept;
   fileInput.multiple = true;
@@ -578,25 +415,18 @@ function buildUploadSection(row, uploadHeading) {
   dropLabel.htmlFor = 'uf-file-input';
   dropLabel.className = 'uf-file-drop-label';
 
-  const dropIcon = document.createElement('span');
-  dropIcon.className = 'uf-file-drop-icon';
-  dropIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <polyline points="16 16 12 12 8 16"></polyline>
-    <line x1="12" y1="12" x2="12" y2="21"></line>
-    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
-  </svg>`;
-
-  const dropText = document.createElement('span');
-  dropText.className = 'uf-file-drop-text';
-  dropText.textContent = 'Drop files here or click to browse';
-
-  const dropSub = document.createElement('span');
-  dropSub.className = 'uf-file-drop-sub';
-  dropSub.textContent = `Accepted formats: ${accept}`;
-
-  dropLabel.appendChild(dropIcon);
-  dropLabel.appendChild(dropText);
-  dropLabel.appendChild(dropSub);
+  dropLabel.innerHTML = `
+    <span class="uf-file-drop-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="16 16 12 12 8 16"></polyline>
+        <line x1="12" y1="12" x2="12" y2="21"></line>
+        <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+      </svg>
+    </span>
+    <span class="uf-file-drop-text">Drop files here or click to browse</span>
+    <span class="uf-file-drop-sub">Accepted formats: ${accept}</span>
+  `;
 
   const fileList = document.createElement('div');
   fileList.className = 'uf-file-list';
@@ -606,23 +436,12 @@ function buildUploadSection(row, uploadHeading) {
     [...fileInput.files].forEach((file) => {
       const item = document.createElement('div');
       item.className = 'uf-file-item';
-      const name = document.createElement('span');
-      name.className = 'uf-file-name';
-      name.textContent = file.name;
-      const size = document.createElement('span');
-      size.className = 'uf-file-size';
-      size.textContent = `${(file.size / 1024).toFixed(1)} KB`;
-      item.appendChild(name);
-      item.appendChild(size);
+      item.innerHTML = `<span class="uf-file-name">${file.name}</span><span class="uf-file-size">${(file.size / 1024).toFixed(1)} KB</span>`;
       fileList.appendChild(item);
     });
   });
 
-  // Drag and drop support
-  fileWrap.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    fileWrap.classList.add('drag-over');
-  });
+  fileWrap.addEventListener('dragover', (e) => { e.preventDefault(); fileWrap.classList.add('drag-over'); });
   fileWrap.addEventListener('dragleave', () => fileWrap.classList.remove('drag-over'));
   fileWrap.addEventListener('drop', (e) => {
     e.preventDefault();
@@ -635,198 +454,155 @@ function buildUploadSection(row, uploadHeading) {
   fileWrap.appendChild(dropLabel);
   fileWrap.appendChild(fileList);
   section.appendChild(fileWrap);
-
   return section;
 }
 
-function buildConsentSection(row) {
+function buildConsentSection(termsHtml, privacyHtml, submitLabel) {
   const section = document.createElement('div');
   section.className = 'uf-section uf-consent-section';
-
-  const checkboxes = [];
-  let submitLabel = 'SUBMIT FORM';
-  let introHtml = '';
-  let disclaimerHtml = '';
-
-  if (row) {
-    const cell = row.children[0];
-    if (cell) {
-      const children = [...cell.children];
-      const introParts = [];
-      const disclaimerParts = [];
-      let pastCheckboxes = false;
-
-      children.forEach((el) => {
-        const text = el.textContent.trim();
-
-        if (text.startsWith('checkbox|')) {
-          pastCheckboxes = true;
-          const parts = text.split('|');
-          checkboxes.push({
-            name: parts[1]?.trim() || 'checkbox',
-            label: parts[2]?.trim() || 'I agree',
-            required: parts[3]?.trim() === 'required',
-          });
-        } else if (text.startsWith('submit|')) {
-          submitLabel = text.split('|')[1]?.trim() || submitLabel;
-        } else if (!pastCheckboxes) {
-          introParts.push(el.outerHTML);
-        } else {
-          disclaimerParts.push(el.outerHTML);
-        }
-      });
-
-      introHtml = introParts.join('');
-      disclaimerHtml = disclaimerParts.join('');
-    }
-  }
-
-  if (introHtml) {
-    const intro = document.createElement('div');
-    intro.className = 'uf-consent-intro';
-    intro.innerHTML = introHtml;
-    section.appendChild(intro);
-  }
 
   const checkboxArea = document.createElement('div');
   checkboxArea.className = 'uf-checkboxes';
 
-  if (checkboxes.length > 0) {
-    checkboxes.forEach((cb) => {
-      checkboxArea.appendChild(buildCheckbox(cb.name, cb.label, cb.required));
-    });
-  } else {
-    // Fallback defaults
-    checkboxArea.appendChild(buildCheckbox(
-      'statement',
-      '*I agree',
-      true,
-    ));
-    const privacyLabel = '*I Accept the <a href="https://www.zimvie.eu/en/privacy-notice.html">Privacy Policy</a>';
-    checkboxArea.appendChild(buildCheckbox('policy', privacyLabel, true));
-  }
+  const defaultTerms = '*I agree to the <a href="https://www.zimvie.eu/en/privacy-notice.html">Terms &amp; Conditions</a>';
+  const defaultPrivacy = '*I Accept the <a href="https://www.zimvie.eu/en/privacy-notice.html">Privacy Policy</a>';
 
+  checkboxArea.appendChild(buildCheckbox('statement', termsHtml || defaultTerms, true));
+  checkboxArea.appendChild(buildCheckbox('policy', privacyHtml || defaultPrivacy, true));
   section.appendChild(checkboxArea);
-
-  if (disclaimerHtml) {
-    const disclaimerEl = document.createElement('div');
-    disclaimerEl.className = 'uf-consent-disclaimer';
-    disclaimerEl.innerHTML = disclaimerHtml;
-    section.appendChild(disclaimerEl);
-  }
 
   const submitBtn = document.createElement('button');
   submitBtn.type = 'submit';
   submitBtn.className = 'uf-submit';
-  submitBtn.textContent = submitLabel;
+  submitBtn.textContent = submitLabel || 'SUBMIT FORM';
   section.appendChild(submitBtn);
 
   return section;
 }
 
-function buildDisclaimerSection(row) {
+function buildDisclaimerSection(html) {
   const section = document.createElement('div');
   section.className = 'uf-section uf-disclaimer';
-
-  if (row) {
-    const cell = row.children[0];
-    if (cell) {
-      const h3 = cell.querySelector('h3');
-      if (!h3) {
-        const heading = document.createElement('h3');
-        heading.textContent = 'Disclaimer';
-        section.appendChild(heading);
-      }
-      const content = document.createElement('div');
-      content.className = 'uf-disclaimer-content';
-      content.innerHTML = cell.innerHTML;
-      section.appendChild(content);
-    }
-  } else {
-    const h3 = document.createElement('h3');
-    h3.textContent = 'Disclaimer';
-    section.appendChild(h3);
+  if (html) {
+    section.innerHTML = html;
   }
-
   return section;
 }
 
-// ââ Main decorate âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── Child item parsers ───────────────────────────────────────────────────────
+
+/**
+ * Parse a region-option child item row.
+ * Cells: [0] label  [1] value  [2] isDefault("true")
+ */
+function parseRegionOptionRow(row) {
+  return {
+    label: cellText(row, 0),
+    value: cellText(row, 1) || cellText(row, 0).toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    isDefault: cellText(row, 2).toLowerCase() === 'true',
+  };
+}
+
+/**
+ * Parse a product-tile child item row.
+ * Cells: [0] productImage(<img>)  [1] productImageAlt  [2] productLabel  [3] productValue
+ */
+function parseProductTileRow(row) {
+  return {
+    imgEl: cellImg(row, 0),
+    imgAlt: cellText(row, 1),
+    label: cellText(row, 2),
+    value: cellText(row, 3) || cellText(row, 2).toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+  };
+}
+
+/**
+ * Parse a form-field child item row.
+ * Cells: [0] fieldLabel  [1] fieldType  [2] fieldName  [3] fieldRequired  [4] fieldRow
+ */
+function parseFormFieldRow(row) {
+  return {
+    label: cellText(row, 0),
+    type: cellText(row, 1) || 'text',
+    name: cellText(row, 2) || cellText(row, 0).toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, ''),
+    required: cellText(row, 3).toLowerCase() === 'true',
+    row: parseInt(cellText(row, 4), 10) || 1,
+  };
+}
+
+/**
+ * Identify what kind of child item a row is by its cell count.
+ * region-option: 3 cells
+ * product-tile:  4 cells
+ * form-field:    5 cells
+ *
+ * Also checks the data-aue-model attribute if present (author-tier only).
+ */
+function classifyChildRow(row) {
+  const model = row.getAttribute?.('data-aue-model') || '';
+  if (model === 'region-option') return 'region-option';
+  if (model === 'product-tile') return 'product-tile';
+  if (model === 'form-field') return 'form-field';
+
+  const count = row.children.length;
+  if (count === 3) return 'region-option';
+  if (count === 4) return 'product-tile';
+  if (count === 5) return 'form-field';
+  return null;
+}
+
+// ─── Main decorate ────────────────────────────────────────────────────────────
 
 export default async function decorate(block) {
   const rows = [...block.children];
 
-  // ââ 1. Identify all rows by type ââââââââââââââââââââââââââââââââââââââââââ
-  let bannerRow = null;
-  let regionRow = null;
-  let productHeadingRow = null;
-  let tilesRow = null;
-  let footnoteRow = null;
-  let infoHeadingRow = null;
-  const fieldRows = [];
-  let uploadRow = null;
-  let consentRow = null;
-  let disclaimerRow = null;
+  // ── 1. Read block-level properties (positional) ───────────────────────────
+  const bannerImg = cellImg(rows[0], 0);
+  const bannerAlt = cellText(rows[1], 0);
+  const regionHeading = cellText(rows[2], 0);
+  const productHeading = cellText(rows[3], 0);
+  const productFootnote = cellText(rows[4], 0);
+  const infoHeading = cellText(rows[5], 0);
+  const uploadHeading = cellText(rows[6], 0);
+  const uploadNote = cellText(rows[7], 0);
+  const uploadFormats = cellText(rows[8], 0);
+  const submitLabel = cellText(rows[9], 0);
+  const consentTermsHtml = cellHtml(rows[10], 0);
+  const consentPrivacyHtml = cellHtml(rows[11], 0);
+  const disclaimerHtml = cellHtml(rows[12], 0);
 
-  rows.forEach((row) => {
-    const text = row.textContent.trim();
+  // ── 2. Read child item rows (rows 13+) ────────────────────────────────────
+  const regionOptions = [];
+  const products = [];
+  const formFields = [];
 
-    if (isBannerRow(row)) {
-      bannerRow = row;
-    } else if (isConsentRow(row)) {
-      consentRow = row;
-    } else if (isUploadRow(row) && !consentRow) {
-      uploadRow = row;
-    } else if (isProductTilesRow(row)) {
-      tilesRow = row;
-    } else if (isFormFieldsRow(row)) {
-      fieldRows.push(row);
-    } else if (hasHeading(row)) {
-      const h3Text = row.querySelector('h3')?.textContent.trim() || '';
-      if (/1\.|region|language/i.test(h3Text)) {
-        regionRow = row;
-      } else if (/2\.|product/i.test(h3Text)) {
-        productHeadingRow = row;
-      } else if (/3\.|fill|information/i.test(h3Text)) {
-        infoHeadingRow = row;
-      } else if (/4\.|upload|dicom/i.test(h3Text)) {
-        uploadRow = row;
-      } else if (/disclaimer/i.test(h3Text)) {
-        disclaimerRow = row;
-      }
-    } else if (/^\*?\s*product clearance|may be limited/i.test(text)) {
-      footnoteRow = row;
-    } else if (/^\*\s*required fields?/i.test(text)) {
-      // skip â built inline
-    } else if (text.length > 100 && !bannerRow && !regionRow) {
-      // Possibly a standalone disclaimer row
-      disclaimerRow = disclaimerRow || row;
+  rows.slice(BLOCK_PROP_ROWS).forEach((row) => {
+    const type = classifyChildRow(row);
+    if (type === 'region-option') {
+      const opt = parseRegionOptionRow(row);
+      if (opt.label) regionOptions.push(opt);
+    } else if (type === 'product-tile') {
+      const tile = parseProductTileRow(row);
+      if (tile.label) products.push(tile);
+    } else if (type === 'form-field') {
+      const field = parseFormFieldRow(row);
+      if (field.label) formFields.push(field);
     }
   });
 
-  // Region row may contain both the heading and the options list
-  if (!regionRow) regionRow = rows.find((r) => r.textContent.includes('|') && r.textContent.length > 50 && !tilesRow === r);
+  // ── 3. Apply defaults when child items not yet authored ───────────────────
+  const finalRegionOptions = regionOptions.length > 0 ? regionOptions : DEFAULT_REGION_OPTIONS;
+  const finalProducts = products.length > 0 ? products : DEFAULT_PRODUCTS;
+  const finalFields = formFields.length > 0 ? formFields : DEFAULT_FIELDS;
 
-  // ââ 2. Get block-level props from data-aue-prop attributes (UE author tier) ââ
-  const getUeProp = (propName) => {
-    const el = block.querySelector(`[data-aue-prop="${propName}"]`);
-    return el ? el.textContent.trim() : null;
-  };
-
-  const regionHeading = getUeProp('regionHeading') || '1. Select Region / Language';
-  const productHeading = getUeProp('productHeading') || '2. Choose Product*';
-  const infoHeading = getUeProp('infoHeading') || '3. Please Fill in the Following Information';
-  const uploadHeading = getUeProp('uploadHeading') || '4. Upload DICOM Data';
-
-  // ââ 3. Build the block ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+  // ── 4. Render ─────────────────────────────────────────────────────────────
   block.innerHTML = '';
 
   // Banner
-  if (bannerRow) {
-    block.appendChild(buildBannerSection(bannerRow));
+  if (bannerImg) {
+    block.appendChild(buildBannerSection(bannerImg, bannerAlt));
   }
 
-  // Wrap everything else in a form body container
   const formBody = document.createElement('div');
   formBody.className = 'uf-form-body';
 
@@ -834,28 +610,21 @@ export default async function decorate(block) {
   form.method = 'POST';
   form.action = 'https://cuztomgraft.zimvie.com/content/zimvie-cuztomgraft/en-GB/_jcr_content/root/container/cuztomgraft_app.post.bin';
   form.enctype = 'multipart/form-data';
-  form.noValidate = false;
 
-  // Region section
-  form.appendChild(buildRegionSection(regionRow, regionHeading));
-
-  // Products section
-  form.appendChild(buildProductsSection(productHeadingRow, tilesRow, footnoteRow, productHeading));
-
-  // Info / form fields section
-  form.appendChild(buildInfoSection(fieldRows, infoHeading));
-
-  // Upload section
-  form.appendChild(buildUploadSection(uploadRow, uploadHeading));
-
-  // Consent + submit section
-  form.appendChild(buildConsentSection(consentRow));
+  form.appendChild(buildRegionSection(regionHeading, finalRegionOptions));
+  form.appendChild(buildProductsSection(productHeading, finalProducts, productFootnote));
+  form.appendChild(buildInfoSection(infoHeading, finalFields));
+  form.appendChild(buildUploadSection(uploadHeading, uploadNote, uploadFormats));
+  form.appendChild(buildConsentSection(
+    consentTermsHtml || null,
+    consentPrivacyHtml || null,
+    submitLabel,
+  ));
 
   formBody.appendChild(form);
   block.appendChild(formBody);
 
-  // Disclaimer (outside form)
-  if (disclaimerRow) {
-    block.appendChild(buildDisclaimerSection(disclaimerRow));
+  if (disclaimerHtml) {
+    block.appendChild(buildDisclaimerSection(disclaimerHtml));
   }
 }
