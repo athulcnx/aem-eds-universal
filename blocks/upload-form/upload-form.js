@@ -8,7 +8,7 @@
  * each item property as a separate cell inside that row.
  *
  * Block-level property row order (matches component-models.json):
- *  Row 0  → bannerImage    (reference → <img> element in cell)
+ *  Row 0  → bannerImage    (reference → <picture>/<img> element in cell)
  *  Row 1  → bannerAlt      (string)
  *  Row 2  → regionHeading  (string)
  *  Row 3  → productHeading (string)
@@ -17,7 +17,7 @@
  *  Row 6  → uploadHeading  (string)
  *  Row 7  → uploadNote     (string — "* Please note …")
  *  Row 8  → uploadFormats  (string — "Accepted file formats: …")
- *  Row 9  → submitLabel    (string)
+ *  Row 9  → submitLabel    (string — "Submit Form")
  *  Row 10 → consentTermsLabel   (richtext → innerHTML)
  *  Row 11 → consentPrivacyLabel (richtext → innerHTML)
  *  Row 12 → disclaimerText      (richtext → innerHTML)
@@ -47,7 +47,7 @@ function cellHtml(row, idx = 0) {
   return cell ? cell.innerHTML.trim() : '';
 }
 
-/** First <img> inside cell[idx]. */
+/** First <img> inside cell[idx] (handles <picture> wrappers too). */
 function cellImg(row, idx = 0) {
   const cell = row?.children?.[idx];
   return cell ? cell.querySelector('img') : null;
@@ -149,7 +149,8 @@ function buildCustomSelect(options, name) {
 }
 
 /**
- * Product radio-tile.
+ * Product radio-tile matching original ZimVie layout:
+ * radio label on top, product image below, click anywhere selects.
  * @param {HTMLImageElement|null} imgEl
  * @param {string} altText
  * @param {string} labelText
@@ -160,56 +161,72 @@ function buildProductTile(imgEl, altText, labelText, value, radioName) {
   const tile = document.createElement('div');
   tile.className = 'uf-product-tile';
 
-  const radioField = document.createElement('div');
-  radioField.className = 'uf-radio-field';
-
+  // Radio input (hidden, controlled via tile click)
   const radio = document.createElement('input');
   radio.type = 'radio';
   radio.name = radioName;
   radio.value = value || labelText;
   radio.required = true;
+  radio.className = 'uf-radio-native';
 
-  const radioRow = document.createElement('label');
-  radioRow.className = 'uf-radio-row';
+  // Radio label row with custom SVG dot
+  const labelEl = document.createElement('label');
+  labelEl.className = 'uf-radio-label';
 
-  const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  // SVG: outer ring + inner filled dot (dot hidden until selected)
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const iconSvg = document.createElementNS(svgNS, 'svg');
   iconSvg.setAttribute('viewBox', '0 0 24 24');
   iconSvg.setAttribute('aria-hidden', 'true');
   iconSvg.classList.add('uf-radio-icon');
-  const outerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+
+  const outerCircle = document.createElementNS(svgNS, 'circle');
   outerCircle.setAttribute('cx', '12');
   outerCircle.setAttribute('cy', '12');
-  outerCircle.setAttribute('r', '11');
+  outerCircle.setAttribute('r', '10');
+  outerCircle.classList.add('uf-radio-outer');
+
+  const innerCircle = document.createElementNS(svgNS, 'circle');
+  innerCircle.setAttribute('cx', '12');
+  innerCircle.setAttribute('cy', '12');
+  innerCircle.setAttribute('r', '5');
+  innerCircle.classList.add('uf-radio-inner');
+
   iconSvg.appendChild(outerCircle);
+  iconSvg.appendChild(innerCircle);
 
-  const labelEl = document.createElement('span');
-  labelEl.className = 'uf-product-label';
-  labelEl.textContent = labelText;
+  const labelText2 = document.createElement('span');
+  labelText2.className = 'uf-radio-text';
+  labelText2.textContent = labelText;
 
-  radioRow.appendChild(iconSvg);
-  radioRow.appendChild(labelEl);
-  radioField.appendChild(radio);
-  radioField.appendChild(radioRow);
+  labelEl.appendChild(radio);
+  labelEl.appendChild(iconSvg);
+  labelEl.appendChild(labelText2);
+  tile.appendChild(labelEl);
 
-  tile.addEventListener('click', () => {
-    radio.checked = true;
-    radio.dispatchEvent(new Event('change', { bubbles: true }));
+  // Product image (below radio row)
+  if (imgEl) {
+    const img = imgEl.cloneNode(true);
+    img.alt = altText || labelText;
+    img.loading = 'lazy';
+    img.className = 'uf-product-img';
+    tile.appendChild(img);
+  }
+
+  // Click anywhere on tile selects the radio
+  tile.addEventListener('click', (e) => {
+    if (e.target !== radio) {
+      radio.checked = true;
+      radio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
   });
+
   radio.addEventListener('change', () => {
     if (radio.checked) {
       tile.closest('.uf-products-grid')?.querySelectorAll('.uf-product-tile').forEach((t) => t.classList.remove('selected'));
       tile.classList.add('selected');
     }
   });
-
-  tile.appendChild(radioField);
-
-  if (imgEl) {
-    const img = imgEl.cloneNode(true);
-    img.alt = altText || labelText;
-    img.loading = 'lazy';
-    tile.appendChild(img);
-  }
 
   return tile;
 }
@@ -221,7 +238,6 @@ function buildField(labelText, type, name, required) {
 
   const lbl = document.createElement('label');
   lbl.textContent = labelText;
-  if (required) lbl.setAttribute('data-required', '');
 
   let input;
   if (type === 'textarea') {
@@ -238,7 +254,7 @@ function buildField(labelText, type, name, required) {
   return fieldDiv;
 }
 
-/** Checkbox row. */
+/** Checkbox row with custom SVG mark. */
 function buildCheckbox(name, labelHtml, required) {
   const wrap = document.createElement('div');
   wrap.className = 'uf-checkbox-row';
@@ -249,11 +265,39 @@ function buildCheckbox(name, labelHtml, required) {
   input.id = `uf-checkbox-${name}`;
   if (required) input.required = true;
 
+  // Custom SVG checkbox mark
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const checkIcon = document.createElementNS(svgNS, 'svg');
+  checkIcon.setAttribute('viewBox', '0 0 20 20');
+  checkIcon.setAttribute('aria-hidden', 'true');
+  checkIcon.classList.add('uf-checkbox-icon');
+  const rect = document.createElementNS(svgNS, 'rect');
+  rect.setAttribute('x', '1');
+  rect.setAttribute('y', '1');
+  rect.setAttribute('width', '18');
+  rect.setAttribute('height', '18');
+  rect.setAttribute('rx', '3');
+  rect.classList.add('uf-checkbox-rect');
+  const check = document.createElementNS(svgNS, 'polyline');
+  check.setAttribute('points', '4,10 8,14 16,6');
+  check.classList.add('uf-checkbox-check');
+  checkIcon.appendChild(rect);
+  checkIcon.appendChild(check);
+
   const lbl = document.createElement('label');
   lbl.htmlFor = `uf-checkbox-${name}`;
   lbl.innerHTML = labelHtml;
 
+  // Toggle checked state on click (icon + hidden input)
+  const toggle = () => {
+    input.checked = !input.checked;
+    wrap.classList.toggle('checked', input.checked);
+  };
+  checkIcon.addEventListener('click', toggle);
+  lbl.addEventListener('click', (e) => { e.preventDefault(); toggle(); });
+
   wrap.appendChild(input);
+  wrap.appendChild(checkIcon);
   wrap.appendChild(lbl);
   return wrap;
 }
@@ -280,10 +324,26 @@ const DEFAULT_REGION_OPTIONS = [
 ];
 
 const DEFAULT_PRODUCTS = [
-  { label: 'Puros® Allograft Customized Block', value: 'puros_allograft_customzied_block', imgSrc: '' },
-  { label: 'PEEK AccuraPlate™', value: 'peek_accuraplate', imgSrc: '' },
-  { label: 'Titanium AccuraMesh™', value: 'titanium_accuramesh', imgSrc: '' },
-  { label: 'PEEK AccuraMesh™', value: 'peek_accuramesh', imgSrc: '' },
+  {
+    label: 'Puros\u00ae Allograft Customized Block',
+    value: 'puros_allograft_customzied_block',
+    imgSrc: 'https://cuztomgraft.zimvie.com/content/zimvie-cuztomgraft/en-GB/_jcr_content/root/container/cuztomgraft_app/_content/region/file-upload-form/field-opt_article/tier-1/product-tile/image.coreimg.jpeg/1660744695684/puros-allograft-customized-block.jpeg',
+  },
+  {
+    label: 'PEEK AccuraPlate\u2122',
+    value: 'peek_accuraplate',
+    imgSrc: 'https://cuztomgraft.zimvie.com/content/zimvie-cuztomgraft/en-GB/_jcr_content/root/container/cuztomgraft_app/_content/region/file-upload-form/field-opt_article/tier-1/product-tile-1/image.coreimg.jpeg/1660744732893/peek-accuraplate.jpeg',
+  },
+  {
+    label: 'Titanium AccuraMesh\u2122',
+    value: 'titanium_accuramesh',
+    imgSrc: 'https://cuztomgraft.zimvie.com/content/zimvie-cuztomgraft/en-GB/_jcr_content/root/container/cuztomgraft_app/_content/region/file-upload-form/field-opt_article/tier-1/product-tile-2/image.coreimg.jpeg/1660744756285/titanium-accuramesh.jpeg',
+  },
+  {
+    label: 'PEEK AccuraMesh\u2122',
+    value: 'peek_accuramesh',
+    imgSrc: 'https://cuztomgraft.zimvie.com/content/zimvie-cuztomgraft/en-GB/_jcr_content/root/container/cuztomgraft_app/_content/region/file-upload-form/field-opt_article/tier-1/product-tile-3/image.coreimg.jpeg/1660744779050/peek-accuramesh.jpeg',
+  },
 ];
 
 const DEFAULT_FIELDS = [
@@ -292,7 +352,7 @@ const DEFAULT_FIELDS = [
   { label: 'Customer Name *', type: 'text', name: 'contact', required: true, row: 2 },
   { label: 'Defect Site *', type: 'text', name: 'region', required: true, row: 2 },
   { label: 'E-Mail *', type: 'email', name: 'email', required: true, row: 3 },
-  { label: 'Number of planned Implants; Ø and length (mm) *', type: 'text', name: 'implant_size', required: true, row: 3 },
+  { label: 'Number of planned Implants; \u00d8 and length (mm) *', type: 'text', name: 'implant_size', required: true, row: 3 },
   { label: 'Address *', type: 'text', name: 'street', required: true, row: 4 },
   { label: 'Comments', type: 'textarea', name: 'comments', required: false, row: 4 },
   { label: 'Phone Number *', type: 'tel', name: 'phone', required: true, row: 5 },
@@ -304,7 +364,11 @@ function buildBannerSection(imgEl, alt) {
   const section = document.createElement('div');
   section.className = 'uf-banner';
   if (imgEl) {
-    section.style.backgroundImage = `url('${imgEl.src}')`;
+    // Use picture element's src as background or show inline
+    const src = imgEl.src || imgEl.currentSrc;
+    if (src) {
+      section.style.backgroundImage = `url('${src}')`;
+    }
     section.setAttribute('aria-label', alt || '');
   }
   return section;
@@ -332,7 +396,16 @@ function buildProductsSection(heading, products, footnote) {
 
   const grid = document.createElement('div');
   grid.className = 'uf-products-grid';
-  products.forEach((p) => grid.appendChild(buildProductTile(p.imgEl || null, p.imgAlt || '', p.label, p.value, 'product')));
+  products.forEach((p) => {
+    // Support both authored child-item rows (p.imgEl) and default fallback (p.imgSrc)
+    let imgEl = p.imgEl || null;
+    if (!imgEl && p.imgSrc) {
+      imgEl = document.createElement('img');
+      imgEl.src = p.imgSrc;
+      imgEl.alt = p.label;
+    }
+    grid.appendChild(buildProductTile(imgEl, p.imgAlt || p.label, p.label, p.value, 'opt_article'));
+  });
   section.appendChild(grid);
 
   if (footnote) {
@@ -368,11 +441,6 @@ function buildInfoSection(heading, fields) {
     section.appendChild(rowDiv);
   });
 
-  const note = document.createElement('p');
-  note.className = 'uf-required-note';
-  note.textContent = '* Required fields';
-  section.appendChild(note);
-
   return section;
 }
 
@@ -384,49 +452,36 @@ function buildUploadSection(heading, note, formats) {
   h3.textContent = heading || '4. Upload DICOM Data';
   section.appendChild(h3);
 
-  const desc = document.createElement('div');
-  desc.className = 'uf-upload-desc';
-
+  // Note paragraph
   const notePara = document.createElement('p');
+  notePara.className = 'uf-upload-note';
   notePara.textContent = note || '* Please note the following information for the data transfer:';
-  desc.appendChild(notePara);
+  section.appendChild(notePara);
 
+  // Accepted formats line
   if (formats) {
     const fmtPara = document.createElement('p');
-    fmtPara.innerHTML = `<strong>${formats}</strong>`;
-    desc.appendChild(fmtPara);
+    fmtPara.className = 'uf-upload-formats';
+    fmtPara.innerHTML = `<strong>Accepted file formats: </strong><strong>${formats.replace(/^Accepted file formats:\s*/i, '')}</strong>`;
+    section.appendChild(fmtPara);
   }
 
-  section.appendChild(desc);
-
-  const accept = '.dcm,.zip,.rar';
+  // File input — styled as a simple CTA button matching original ZimVie site
   const fileWrap = document.createElement('div');
-  fileWrap.className = 'uf-file-drop-zone';
+  fileWrap.className = 'uf-file-wrap';
 
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.name = 'files[]';
   fileInput.id = 'uf-file-input';
-  fileInput.accept = accept;
+  fileInput.accept = '.pdf,.zip,.rar';
   fileInput.multiple = true;
   fileInput.className = 'uf-file-input';
 
-  const dropLabel = document.createElement('label');
-  dropLabel.htmlFor = 'uf-file-input';
-  dropLabel.className = 'uf-file-drop-label';
-
-  dropLabel.innerHTML = `
-    <span class="uf-file-drop-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <polyline points="16 16 12 12 8 16"></polyline>
-        <line x1="12" y1="12" x2="12" y2="21"></line>
-        <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
-      </svg>
-    </span>
-    <span class="uf-file-drop-text">Drop files here or click to browse</span>
-    <span class="uf-file-drop-sub">Accepted formats: ${accept}</span>
-  `;
+  const cta = document.createElement('label');
+  cta.htmlFor = 'uf-file-input';
+  cta.className = 'uf-file-cta';
+  cta.textContent = 'Select files \u2026';
 
   const fileList = document.createElement('div');
   fileList.className = 'uf-file-list';
@@ -441,51 +496,43 @@ function buildUploadSection(heading, note, formats) {
     });
   });
 
-  fileWrap.addEventListener('dragover', (e) => { e.preventDefault(); fileWrap.classList.add('drag-over'); });
-  fileWrap.addEventListener('dragleave', () => fileWrap.classList.remove('drag-over'));
-  fileWrap.addEventListener('drop', (e) => {
-    e.preventDefault();
-    fileWrap.classList.remove('drag-over');
-    fileInput.files = e.dataTransfer.files;
-    fileInput.dispatchEvent(new Event('change'));
-  });
-
   fileWrap.appendChild(fileInput);
-  fileWrap.appendChild(dropLabel);
+  fileWrap.appendChild(cta);
   fileWrap.appendChild(fileList);
   section.appendChild(fileWrap);
   return section;
 }
 
-function buildConsentSection(termsHtml, privacyHtml, submitLabel) {
+function buildConsentSection(disclaimerHtml, termsHtml, privacyHtml, submitLabel) {
   const section = document.createElement('div');
   section.className = 'uf-section uf-consent-section';
 
-  const checkboxArea = document.createElement('div');
-  checkboxArea.className = 'uf-checkboxes';
+  // Disclaimer text block (italicized paragraph above checkboxes)
+  if (disclaimerHtml) {
+    const disc = document.createElement('div');
+    disc.className = 'uf-disclaimer-text';
+    disc.innerHTML = disclaimerHtml;
+    section.appendChild(disc);
+  }
 
-  const defaultTerms = '*I agree to the <a href="https://www.zimvie.eu/en/privacy-notice.html">Terms &amp; Conditions</a>';
+  // Checkboxes in a flex row
+  const checkboxRow = document.createElement('div');
+  checkboxRow.className = 'uf-checkboxes';
+
+  const defaultTerms = '*I agree';
   const defaultPrivacy = '*I Accept the <a href="https://www.zimvie.eu/en/privacy-notice.html">Privacy Policy</a>';
 
-  checkboxArea.appendChild(buildCheckbox('statement', termsHtml || defaultTerms, true));
-  checkboxArea.appendChild(buildCheckbox('policy', privacyHtml || defaultPrivacy, true));
-  section.appendChild(checkboxArea);
+  checkboxRow.appendChild(buildCheckbox('statement', termsHtml || defaultTerms, true));
+  checkboxRow.appendChild(buildCheckbox('policy', privacyHtml || defaultPrivacy, true));
+  section.appendChild(checkboxRow);
 
+  // Submit button
   const submitBtn = document.createElement('button');
   submitBtn.type = 'submit';
   submitBtn.className = 'uf-submit';
   submitBtn.textContent = submitLabel || 'SUBMIT FORM';
   section.appendChild(submitBtn);
 
-  return section;
-}
-
-function buildDisclaimerSection(html) {
-  const section = document.createElement('div');
-  section.className = 'uf-section uf-disclaimer';
-  if (html) {
-    section.innerHTML = html;
-  }
   return section;
 }
 
@@ -616,6 +663,7 @@ export default async function decorate(block) {
   form.appendChild(buildInfoSection(infoHeading, finalFields));
   form.appendChild(buildUploadSection(uploadHeading, uploadNote, uploadFormats));
   form.appendChild(buildConsentSection(
+    disclaimerHtml || null,
     consentTermsHtml || null,
     consentPrivacyHtml || null,
     submitLabel,
@@ -623,8 +671,4 @@ export default async function decorate(block) {
 
   formBody.appendChild(form);
   block.appendChild(formBody);
-
-  if (disclaimerHtml) {
-    block.appendChild(buildDisclaimerSection(disclaimerHtml));
-  }
 }
